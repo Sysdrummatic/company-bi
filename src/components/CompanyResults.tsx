@@ -102,11 +102,11 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
       );
     }
 
-    if (selectedCountry) {
+    if (selectedCountry && selectedCountry !== 'all') {
       filtered = filtered.filter(company => company.country === selectedCountry);
     }
 
-    if (selectedIndustry) {
+    if (selectedIndustry && selectedIndustry !== 'all') {
       filtered = filtered.filter(company => company.industry === selectedIndustry);
     }
 

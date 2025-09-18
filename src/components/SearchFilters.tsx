@@ -70,7 +70,7 @@ export const SearchFilters = ({
               <SelectValue placeholder="Select country..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Countries</SelectItem>
+              <SelectItem value="all">All Countries</SelectItem>
               {countries.map((country) => (
                 <SelectItem key={country.code} value={country.code}>
                   {country.name}
@@ -90,7 +90,7 @@ export const SearchFilters = ({
               <SelectValue placeholder="Select industry..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Industries</SelectItem>
+              <SelectItem value="all">All Industries</SelectItem>
               {industries.map((industry) => (
                 <SelectItem key={industry} value={industry}>
                   {industry}
