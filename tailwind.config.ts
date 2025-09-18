@@ -47,6 +47,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        business: {
+          primary: "hsl(var(--business-primary))",
+          secondary: "hsl(var(--business-secondary))",
+          accent: "hsl(var(--business-accent))",
+          success: "hsl(var(--business-success))",
+          warning: "hsl(var(--business-warning))",
+          error: "hsl(var(--business-error))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -80,10 +88,30 @@ export default {
             height: "0",
           },
         },
+        fadeIn: {
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        slideUp: {
+          from: { transform: "translateY(20px)", opacity: "0" },
+          to: { transform: "translateY(0)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fadeIn 0.5s ease-out",
+        "slide-up": "slideUp 0.3s ease-out",
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-secondary': 'var(--gradient-secondary)',
+        'gradient-hero': 'var(--gradient-hero)',
+      },
+      boxShadow: {
+        'soft': 'var(--shadow-soft)',
+        'medium': 'var(--shadow-medium)',
+        'strong': 'var(--shadow-strong)',
       },
     },
   },
