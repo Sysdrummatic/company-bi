@@ -3,18 +3,26 @@ import { Building2, MapPin, Users, Calendar, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import companiesData from '@/data/database.json';
 
 interface Company {
-  id: string;
-  name: string;
-  registrationNumber: string;
+  companyName: string;
+  krsNIPorHRB: string;
+  status: string;
+  description: string;
   country: string;
   industry: string;
-  address: string;
-  employees: string;
+  employeeCount: string;
   foundedYear: number;
-  status: 'Active' | 'Inactive';
-  description: string;
+  address: string;
+  website: string;
+  contactEmail: string;
+  phoneNumber: string;
+  revenue: string;
+  management: string[];
+  productsAndServices: string[];
+  technologiesUsed: string[];
+  lastUpdated: string;
 }
 
 interface CompanyResultsProps {
@@ -23,87 +31,37 @@ interface CompanyResultsProps {
   selectedIndustry: string;
 }
 
-// Mock data for demonstration
-const mockCompanies: Company[] = [
-  {
-    id: '1',
-    name: 'TechFlow Solutions Sp. z o.o.',
-    registrationNumber: 'KRS 0000123456',
-    country: 'PL',
-    industry: 'Technology',
-    address: 'ul. Marszałkowska 126, 00-008 Warsaw, Poland',
-    employees: '50-99',
-    foundedYear: 2018,
-    status: 'Active',
-    description: 'Software development and IT consulting services'
-  },
-  {
-    id: '2',
-    name: 'Alpine Healthcare GmbH',
-    registrationNumber: 'HRB 98765',
-    country: 'DE',
-    industry: 'Healthcare',
-    address: 'Maximilianstraße 35, 80539 Munich, Germany',
-    employees: '100-249',
-    foundedYear: 2015,
-    status: 'Active',
-    description: 'Medical device manufacturing and healthcare solutions'
-  },
-  {
-    id: '3',
-    name: 'Green Energy Ltd.',
-    registrationNumber: '12345678',
-    country: 'GB',
-    industry: 'Energy',
-    address: '123 London Bridge St, London SE1 9SG, UK',
-    employees: '250-499',
-    foundedYear: 2020,
-    status: 'Active',
-    description: 'Renewable energy solutions and consulting'
-  },
-  {
-    id: '4',
-    name: 'Digital Finance Corp.',
-    registrationNumber: 'C123456789',
-    country: 'US',
-    industry: 'Finance',
-    address: '456 Wall Street, New York, NY 10005, USA',
-    employees: '500+',
-    foundedYear: 2012,
-    status: 'Active',
-    description: 'Fintech solutions and digital banking services'
-  },
-];
+const companies: Company[] = companiesData as Company[];
 
-const getCountryName = (code: string) => {
+const getCountryCode = (countryName: string) => {
   const countries: Record<string, string> = {
-    'PL': 'Poland',
-    'DE': 'Germany',
-    'GB': 'United Kingdom',
-    'US': 'United States',
-    'FR': 'France',
-    'NL': 'Netherlands',
-    'CA': 'Canada',
-    'AU': 'Australia',
+    'Poland': 'PL',
+    'Germany': 'DE', 
+    'United Kingdom': 'GB',
+    'United States': 'US',
+    'France': 'FR',
+    'Netherlands': 'NL',
+    'Canada': 'CA',
+    'Australia': 'AU',
   };
-  return countries[code] || code;
+  return countries[countryName] || countryName;
 };
 
 export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry }: CompanyResultsProps) => {
-  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>(mockCompanies);
+  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>(companies);
 
   useEffect(() => {
-    let filtered = mockCompanies;
+    let filtered = companies;
 
     if (searchQuery) {
       filtered = filtered.filter(company =>
-        company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        company.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         company.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     if (selectedCountry && selectedCountry !== 'all') {
-      filtered = filtered.filter(company => company.country === selectedCountry);
+      filtered = filtered.filter(company => getCountryCode(company.country) === selectedCountry);
     }
 
     if (selectedIndustry && selectedIndustry !== 'all') {
@@ -122,8 +80,8 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredCompanies.map((company) => (
-          <Card key={company.id} className="shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up">
+        {filteredCompanies.map((company, index) => (
+          <Card key={index} className="shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -131,8 +89,8 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg leading-tight">{company.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{company.registrationNumber}</p>
+                    <CardTitle className="text-lg leading-tight">{company.companyName}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{company.krsNIPorHRB}</p>
                   </div>
                 </div>
                 <Badge variant={company.status === 'Active' ? 'default' : 'secondary'}>
@@ -147,7 +105,7 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-business-accent" />
-                  <span>{getCountryName(company.country)}</span>
+                  <span>{company.country}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-business-accent" />
@@ -155,7 +113,7 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-business-accent" />
-                  <span>{company.employees} employees</span>
+                  <span>{company.employeeCount}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-business-accent" />
@@ -168,7 +126,12 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
                 <p className="text-sm">{company.address}</p>
               </div>
               
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => window.open(`/company/${index}`, '_blank')}
+              >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View Details
               </Button>
