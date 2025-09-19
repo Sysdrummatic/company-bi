@@ -91,7 +91,7 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-foreground">
-          Companies Found: {filteredCompanies.length}
+          Displayed Companies: {Math.min(displayedCount, filteredCompanies.length)} of {filteredCompanies.length}
         </h2>
       </div>
 
