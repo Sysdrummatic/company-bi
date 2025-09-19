@@ -51,6 +51,7 @@ const getCountryCode = (countryName: string) => {
 export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry }: CompanyResultsProps) => {
   const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [displayedCount, setDisplayedCount] = useState(10);
 
   useEffect(() => {
     // Only show results if there's a search query or filters applied
@@ -77,6 +78,7 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
     }
 
     setFilteredCompanies(filtered);
+    setDisplayedCount(10); // Reset to show first 10 companies when filters change
   }, [searchQuery, selectedCountry, selectedIndustry]);
 
   const checkGoogleMaps = async (company: Company) => {
@@ -94,7 +96,7 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredCompanies.map((company, index) => (
+        {filteredCompanies.slice(0, displayedCount).map((company, index) => (
           <Card key={index} className="shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -162,6 +164,19 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
           </Card>
         ))}
       </div>
+
+      {/* Show More Button */}
+      {filteredCompanies.length > displayedCount && (
+        <div className="flex justify-center mt-6">
+          <Button 
+            variant="outline" 
+            onClick={() => setDisplayedCount(prev => prev + 10)}
+            className="px-8"
+          >
+            Show more ({filteredCompanies.length - displayedCount} remaining)
+          </Button>
+        </div>
+      )}
 
       {filteredCompanies.length === 0 && (searchQuery || selectedCountry !== 'all' || selectedIndustry !== 'all') && (
         <Card className="p-8 text-center">
