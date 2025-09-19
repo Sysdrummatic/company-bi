@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Building2, MapPin, Users, Calendar, ExternalLink } from 'lucide-react';
+import { Building2, MapPin, Users, Calendar, ExternalLink, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import companiesData from '@/data/database.json';
 
 interface Company {
@@ -48,9 +49,16 @@ const getCountryCode = (countryName: string) => {
 };
 
 export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry }: CompanyResultsProps) => {
-  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>(companies);
+  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
   useEffect(() => {
+    // Only show results if there's a search query or filters applied
+    if (!searchQuery && selectedCountry === 'all' && selectedIndustry === 'all') {
+      setFilteredCompanies([]);
+      return;
+    }
+
     let filtered = companies;
 
     if (searchQuery) {
@@ -70,6 +78,12 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
 
     setFilteredCompanies(filtered);
   }, [searchQuery, selectedCountry, selectedIndustry]);
+
+  const checkGoogleMaps = async (company: Company) => {
+    const query = `${company.companyName} ${company.address}`;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    window.open(mapsUrl, '_blank');
+  };
 
   return (
     <div className="space-y-6">
@@ -126,27 +140,127 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
                 <p className="text-sm">{company.address}</p>
               </div>
               
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => window.open(`/company/${index}`, '_blank')}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View Details
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => setSelectedCompany(company)}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View Details
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={() => checkGoogleMaps(company)}
+                >
+                  🗺️ Maps
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {filteredCompanies.length === 0 && (
+      {filteredCompanies.length === 0 && (searchQuery || selectedCountry !== 'all' || selectedIndustry !== 'all') && (
         <Card className="p-8 text-center">
           <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">No companies found</h3>
           <p className="text-muted-foreground">Try adjusting your search criteria or filters.</p>
         </Card>
       )}
+
+      {/* Company Details Modal */}
+      <Dialog open={!!selectedCompany} onOpenChange={() => setSelectedCompany(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedCompany && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <Building2 className="h-5 w-5 text-white" />
+                  </div>
+                  {selectedCompany.companyName}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Company Information</h3>
+                      <div className="space-y-2 text-sm">
+                        <p><strong>Registration:</strong> {selectedCompany.krsNIPorHRB}</p>
+                        <p><strong>Status:</strong> <Badge variant={selectedCompany.status === 'Active' ? 'default' : 'secondary'}>{selectedCompany.status}</Badge></p>
+                        <p><strong>Founded:</strong> {selectedCompany.foundedYear}</p>
+                        <p><strong>Industry:</strong> {selectedCompany.industry}</p>
+                        <p><strong>Employees:</strong> {selectedCompany.employeeCount}</p>
+                        <p><strong>Revenue:</strong> {selectedCompany.revenue}</p>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold mb-2">Contact Information</h3>
+                      <div className="space-y-2 text-sm">
+                        <p><strong>Address:</strong> {selectedCompany.address}</p>
+                        <p><strong>Website:</strong> <a href={selectedCompany.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{selectedCompany.website}</a></p>
+                        <p><strong>Email:</strong> <a href={`mailto:${selectedCompany.contactEmail}`} className="text-primary hover:underline">{selectedCompany.contactEmail}</a></p>
+                        <p><strong>Phone:</strong> <a href={`tel:${selectedCompany.phoneNumber}`} className="text-primary hover:underline">{selectedCompany.phoneNumber}</a></p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Management</h3>
+                      <div className="space-y-1">
+                        {selectedCompany.management.map((manager, idx) => (
+                          <p key={idx} className="text-sm">{manager}</p>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold mb-2">Products & Services</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCompany.productsAndServices.map((service, idx) => (
+                          <Badge key={idx} variant="secondary">{service}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold mb-2">Technologies</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCompany.technologiesUsed.map((tech, idx) => (
+                          <Badge key={idx} variant="outline">{tech}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-semibold mb-2">Description</h3>
+                  <p className="text-sm text-muted-foreground">{selectedCompany.description}</p>
+                </div>
+                
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={() => checkGoogleMaps(selectedCompany)} variant="outline">
+                    🗺️ Check on Google Maps
+                  </Button>
+                  <Button onClick={() => window.open(selectedCompany.website, '_blank')} variant="outline">
+                    🌐 Visit Website
+                  </Button>
+                </div>
+                
+                <p className="text-xs text-muted-foreground">Last updated: {selectedCompany.lastUpdated}</p>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

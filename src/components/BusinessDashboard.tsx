@@ -1,37 +1,104 @@
+import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Building2, Globe, Users } from 'lucide-react';
+import companiesData from '@/data/database.json';
 
 interface BusinessDashboardProps {
   selectedCountry: string;
 }
 
-// Mock data for demonstration
-const industryData = [
-  { name: 'Technology', value: 35, color: 'hsl(var(--business-primary))' },
-  { name: 'Healthcare', value: 20, color: 'hsl(var(--business-accent))' },
-  { name: 'Finance', value: 15, color: 'hsl(var(--business-secondary))' },
-  { name: 'Manufacturing', value: 12, color: 'hsl(var(--business-success))' },
-  { name: 'Retail', value: 10, color: 'hsl(var(--business-warning))' },
-  { name: 'Other', value: 8, color: 'hsl(var(--muted))' },
-];
+interface Company {
+  companyName: string;
+  country: string;
+  industry: string;
+  employeeCount: string;
+  foundedYear: number;
+  status: string;
+}
 
-const employeeSizeData = [
-  { name: '1-10', companies: 450 },
-  { name: '11-50', companies: 320 },
-  { name: '51-100', companies: 180 },
-  { name: '101-250', companies: 120 },
-  { name: '250+', companies: 80 },
-];
-
-const countryStats = {
-  totalCompanies: 1150,
-  activeCompanies: 1098,
-  newThisYear: 142,
-  averageAge: 8.5,
+const getCountryCode = (countryName: string) => {
+  const countries: Record<string, string> = {
+    'Poland': 'PL',
+    'Germany': 'DE', 
+    'United Kingdom': 'GB',
+    'United States': 'US',
+    'France': 'FR',
+    'Netherlands': 'NL',
+    'Canada': 'CA',
+    'Australia': 'AU',
+  };
+  return countries[countryName] || countryName;
 };
 
 export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) => {
+  const [industryData, setIndustryData] = useState<any[]>([]);
+  const [employeeSizeData, setEmployeeSizeData] = useState<any[]>([]);
+  const [countryStats, setCountryStats] = useState<any>({
+    totalCompanies: 0,
+    activeCompanies: 0,
+    newThisYear: 0,
+    averageAge: 0
+  });
+
+  const companies: Company[] = companiesData as Company[];
+
+  useEffect(() => {
+    let filteredCompanies = companies;
+    
+    // Filter by country if selected
+    if (selectedCountry && selectedCountry !== 'all') {
+      filteredCompanies = companies.filter(company => 
+        getCountryCode(company.country) === selectedCountry
+      );
+    }
+
+    // Calculate industry distribution
+    const industryCount: Record<string, number> = {};
+    filteredCompanies.forEach(company => {
+      industryCount[company.industry] = (industryCount[company.industry] || 0) + 1;
+    });
+
+    const industryColors = ['hsl(var(--business-primary))', 'hsl(var(--business-accent))', 'hsl(var(--business-secondary))', 'hsl(var(--business-success))', 'hsl(var(--business-warning))', 'hsl(var(--muted))'];
+    const industryDataProcessed = Object.entries(industryCount)
+      .map(([name, value], index) => ({
+        name,
+        value,
+        color: industryColors[index % industryColors.length]
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    setIndustryData(industryDataProcessed);
+
+    // Calculate employee size distribution
+    const sizeCount: Record<string, number> = {};
+    filteredCompanies.forEach(company => {
+      const size = company.employeeCount;
+      sizeCount[size] = (sizeCount[size] || 0) + 1;
+    });
+
+    const employeeDataProcessed = Object.entries(sizeCount)
+      .map(([name, companies]) => ({ name, companies }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    setEmployeeSizeData(employeeDataProcessed);
+
+    // Calculate stats
+    const activeCompanies = filteredCompanies.filter(c => c.status === 'Active').length;
+    const currentYear = new Date().getFullYear();
+    const newThisYear = filteredCompanies.filter(c => c.foundedYear >= currentYear - 1).length;
+    const avgAge = filteredCompanies.length > 0 
+      ? filteredCompanies.reduce((sum, c) => sum + (currentYear - c.foundedYear), 0) / filteredCompanies.length 
+      : 0;
+
+    setCountryStats({
+      totalCompanies: filteredCompanies.length,
+      activeCompanies,
+      newThisYear,
+      averageAge: Math.round(avgAge * 10) / 10
+    });
+  }, [selectedCountry]);
+
   const countryName = selectedCountry ? 
     {'PL': 'Poland', 'DE': 'Germany', 'GB': 'United Kingdom', 'US': 'United States'}[selectedCountry] || selectedCountry
     : 'All Countries';
