@@ -77,37 +77,37 @@ const Index = () => {
             
             {/* Feature highlights */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-medium animate-slide-up">
+              <div className="bg-card backdrop-blur-sm rounded-xl p-6 border border-border shadow-medium animate-slide-up">
                 <Search className="h-8 w-8 text-business-accent mb-4 mx-auto" />
-                <h3 className="text-lg font-semibold text-text-contrast mb-2">Smart Search</h3>
-                <p className="text-sm text-text-contrast/80">Advanced filtering and real-time search capabilities</p>
+                <h3 className="text-lg font-semibold text-card-foreground mb-2">Smart Search</h3>
+                <p className="text-sm text-muted-foreground">Advanced filtering and real-time search capabilities</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-medium animate-slide-up delay-200">
+              <div className="bg-card backdrop-blur-sm rounded-xl p-6 border border-border shadow-medium animate-slide-up delay-200">
                 <TrendingUp className="h-8 w-8 text-business-success mb-4 mx-auto" />
-                <h3 className="text-lg font-semibold text-text-contrast mb-2">Analytics</h3>
-                <p className="text-sm text-text-contrast/80">Comprehensive business insights and market trends</p>
+                <h3 className="text-lg font-semibold text-card-foreground mb-2">Analytics</h3>
+                <p className="text-sm text-muted-foreground">Comprehensive business insights and market trends</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-medium animate-slide-up delay-300">
+              <div className="bg-card backdrop-blur-sm rounded-xl p-6 border border-border shadow-medium animate-slide-up delay-300">
                 <Globe className="h-8 w-8 text-business-primary mb-4 mx-auto" />
-                <h3 className="text-lg font-semibold text-text-contrast mb-2">Global Reach</h3>
-                <p className="text-sm text-text-contrast/80">Access companies from multiple countries and industries</p>
+                <h3 className="text-lg font-semibold text-card-foreground mb-2">Global Reach</h3>
+                <p className="text-sm text-muted-foreground">Access companies from multiple countries and industries</p>
               </div>
             </div>
           </div>
 
           {/* Interactive Content */}
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-strong p-8 animate-slide-up delay-500">
+          <div className="bg-card/95 backdrop-blur-md rounded-3xl border border-border shadow-strong p-8 animate-slide-up delay-500">
             <Tabs defaultValue="search" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto bg-white/20 backdrop-blur-sm">
+              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto bg-secondary backdrop-blur-sm">
                 <TabsTrigger 
                   value="search" 
-                  className="data-[state=active]:bg-white/30 data-[state=active]:text-text-contrast text-text-contrast/70"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-secondary-foreground"
                 >
                   Company Search
                 </TabsTrigger>
                 <TabsTrigger 
                   value="dashboard" 
-                  className="data-[state=active]:bg-white/30 data-[state=active]:text-text-contrast text-text-contrast/70"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-secondary-foreground"
                 >
                   Analytics
                 </TabsTrigger>

@@ -97,7 +97,7 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredCompanies.slice(0, displayedCount).map((company, index) => (
-          <Card key={index} className="shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up">
+          <Card key={index} className="bg-card text-card-foreground shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -179,7 +179,7 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
       )}
 
       {filteredCompanies.length === 0 && (searchQuery || selectedCountry !== 'all' || selectedIndustry !== 'all') && (
-        <Card className="p-8 text-center">
+        <Card className="bg-card text-card-foreground p-8 text-center">
           <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">No companies found</h3>
           <p className="text-muted-foreground">Try adjusting your search criteria or filters.</p>
