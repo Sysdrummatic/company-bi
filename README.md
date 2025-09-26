@@ -1,8 +1,12 @@
 # Welcome to your Lovable project
 
+## Published site
+
+**URL**: [Company BI](https://companybi.lovable.app/)
+
 ## Project info
 
-**URL**: https://lovable.dev/projects/6916cf2d-a59a-4fe4-99c9-21093a597173
+**URL**: [Lovable project](https://lovable.dev/projects/6916cf2d-a59a-4fe4-99c9-21093a597173)
 
 ## How can I edit this code?
 
