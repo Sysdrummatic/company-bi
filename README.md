@@ -4,6 +4,12 @@
 
 **URL**: [Company BI](https://companybi.lovable.app/)
 
+## About project
+
+The simple one page project of a company browser. Based on Google's course materials I tried to build the simple web page with Lovable. The current project's database is stored in a JSON file. The test went very smooth because the creation process took about 30 mins from start to publishing.
+
+---
+
 ## Project info
 
 **URL**: [Lovable project](https://lovable.dev/projects/6916cf2d-a59a-4fe4-99c9-21093a597173)
