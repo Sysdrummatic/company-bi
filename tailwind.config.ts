@@ -55,6 +55,9 @@ export default {
           warning: "hsl(var(--business-warning))",
           error: "hsl(var(--business-error))",
         },
+        "text-contrast": "hsl(var(--text-contrast))",
+        "text-on-primary": "hsl(var(--text-on-primary))",
+        "text-on-secondary": "hsl(var(--text-on-secondary))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -113,6 +116,13 @@ export default {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
+        "bounce-balls": {
+          "0%": { transform: "translate(0, 0)" },
+          "25%": { transform: "translate(100vw, 25vh)" },
+          "50%": { transform: "translate(75vw, 100vh)" },
+          "75%": { transform: "translate(25vw, 75vh)" },
+          "100%": { transform: "translate(0, 0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -123,6 +133,7 @@ export default {
         "float": "float 6s ease-in-out infinite",
         "pulse-glow": "pulse-glow 4s ease-in-out infinite",
         "spin-slow": "spin-slow 20s linear infinite",
+        "bounce-balls": "bounce-balls 15s ease-in-out infinite",
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',

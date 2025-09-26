@@ -44,6 +44,11 @@ All colors MUST be HSL.
     --business-warning: 38 92% 50%;
     --business-error: 0 84% 60%;
 
+    /* Text contrast for backgrounds */
+    --text-on-primary: 0 0% 100%;
+    --text-on-secondary: 0 0% 100%;
+    --text-contrast: 0 0% 100%;
+
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--business-primary)), hsl(var(--business-accent)));
     --gradient-secondary: linear-gradient(135deg, hsl(var(--business-secondary)), hsl(var(--business-primary)));
