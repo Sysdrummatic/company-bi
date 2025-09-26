@@ -13,7 +13,7 @@ interface SearchFiltersProps {
 }
 
 const countries = [
-  { code: 'US', name: 'United States' },
+  { code: 'US', name: 'USA' },
   { code: 'GB', name: 'United Kingdom' },
   { code: 'DE', name: 'Germany' },
   { code: 'FR', name: 'France' },
@@ -34,6 +34,18 @@ const industries = [
   'Energy',
   'Education',
   'Real Estate',
+  'Logistics',
+  'Food & Beverage',
+  'Marketing & Advertising',
+  'Consulting',
+  'Automotive',
+  'Biotechnology',
+  'Agriculture',
+  'Insurance',
+  'Telecommunications',
+  'Entertainment',
+  'Sports',
+  'Travel & Tourism',
 ];
 
 export const SearchFilters = ({
