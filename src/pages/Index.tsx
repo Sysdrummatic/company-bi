@@ -64,7 +64,7 @@ const Index = () => {
         <div className="container mx-auto px-4 pt-16 pb-8">
           <div className="text-center mb-12 animate-fade-in">
             <div className="flex justify-center mb-6">
-              <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 shadow-strong">
+              <div className="p-4 bg-card backdrop-blur-sm rounded-2xl border border-border shadow-strong">
                 <Building2 className="h-12 w-12 text-business-primary animate-pulse-glow" />
               </div>
             </div>
