@@ -1,161 +1,304 @@
-import { useState, useEffect } from 'react';
-import { Building2, MapPin, Users, Calendar, ExternalLink, X } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Building2, MapPin, Users, Calendar, ExternalLink, Filter, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import companiesData from '@/data/database.json';
-
-interface Company {
-  companyName: string;
-  krsNIPorHRB: string;
-  status: string;
-  description: string;
-  country: string;
-  industry: string;
-  employeeCount: string;
-  foundedYear: number;
-  address: string;
-  website: string;
-  contactEmail: string;
-  phoneNumber: string;
-  revenue: string;
-  management: string[];
-  productsAndServices: string[];
-  technologiesUsed: string[];
-  lastUpdated: string;
-}
+import type { Company } from '@/types/company';
+import { countryNameToCode } from '@/lib/location';
 
 interface CompanyResultsProps {
   searchQuery: string;
   selectedCountry: string;
   selectedIndustry: string;
+  selectedEmployeeRange: string;
+  selectedStatus: string;
+  sortOption: SortOption;
+  onSortChange: (option: SortOption) => void;
 }
+
+export type SortOption =
+  | 'relevance'
+  | 'name-asc'
+  | 'name-desc'
+  | 'founded-newest'
+  | 'founded-oldest';
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'relevance', label: 'Best match' },
+  { value: 'name-asc', label: 'Name A → Z' },
+  { value: 'name-desc', label: 'Name Z → A' },
+  { value: 'founded-newest', label: 'Newest companies' },
+  { value: 'founded-oldest', label: 'Oldest companies' },
+];
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const highlightMatch = (text: string, query: string) => {
+  if (!query) return text;
+  const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, 'ig'));
+  return parts.map((part, index) =>
+    part.toLowerCase() === query.toLowerCase() ? (
+      <mark key={`${part}-${index}`} className="bg-business-accent/20 text-foreground rounded px-0.5">
+        {part}
+      </mark>
+    ) : (
+      <span key={`${part}-${index}`}>{part}</span>
+    )
+  );
+};
+
+const computeRelevanceScore = (company: Company, normalizedQuery: string) => {
+  if (!normalizedQuery) return 0;
+  let score = 0;
+
+  const name = company.companyName.toLowerCase();
+  const description = company.description.toLowerCase();
+  const industry = company.industry.toLowerCase();
+  const address = company.address.toLowerCase();
+
+  if (name.includes(normalizedQuery)) score += 6;
+  if (company.krsNIPorHRB.toLowerCase().includes(normalizedQuery)) score += 4;
+  if (description.includes(normalizedQuery)) score += 3;
+  if (industry.includes(normalizedQuery)) score += 2;
+  if (address.includes(normalizedQuery)) score += 1;
+
+  return score;
+};
 
 const companies: Company[] = companiesData as Company[];
 
-const getCountryCode = (countryName: string) => {
-  const countries: Record<string, string> = {
-    'Poland': 'PL',
-    'Germany': 'DE', 
-    'United Kingdom': 'GB',
-    'United States': 'US',
-    'France': 'FR',
-    'Netherlands': 'NL',
-    'Canada': 'CA',
-    'Australia': 'AU',
-  };
-  return countries[countryName] || countryName;
-};
-
-export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry }: CompanyResultsProps) => {
-  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
+export const CompanyResults = ({
+  searchQuery,
+  selectedCountry,
+  selectedIndustry,
+  selectedEmployeeRange,
+  selectedStatus,
+  sortOption,
+  onSortChange,
+}: CompanyResultsProps) => {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [displayedCount, setDisplayedCount] = useState(10);
 
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredCompanies = useMemo(() => {
+    return companies.filter((company) => {
+      const matchesQuery = normalizedQuery
+        ? company.companyName.toLowerCase().includes(normalizedQuery) ||
+          company.description.toLowerCase().includes(normalizedQuery) ||
+          company.productsAndServices.some((service) => service.toLowerCase().includes(normalizedQuery)) ||
+          company.technologiesUsed.some((tech) => tech.toLowerCase().includes(normalizedQuery))
+        : true;
+
+      const matchesCountry = selectedCountry === 'all'
+        ? true
+        : countryNameToCode(company.country) === selectedCountry;
+
+      const matchesIndustry = selectedIndustry === 'all'
+        ? true
+        : company.industry === selectedIndustry;
+
+      const matchesEmployeeRange = selectedEmployeeRange === 'all'
+        ? true
+        : company.employeeCount === selectedEmployeeRange;
+
+      const matchesStatus = selectedStatus === 'all'
+        ? true
+        : company.status === selectedStatus;
+
+      return matchesQuery && matchesCountry && matchesIndustry && matchesEmployeeRange && matchesStatus;
+    });
+  }, [normalizedQuery, selectedCountry, selectedIndustry, selectedEmployeeRange, selectedStatus]);
+
+  const sortedCompanies = useMemo(() => {
+    const companiesWithScore = filteredCompanies.map((company) => ({
+      company,
+      score: computeRelevanceScore(company, normalizedQuery),
+    }));
+
+    return companiesWithScore
+      .sort((a, b) => {
+        switch (sortOption) {
+          case 'name-asc':
+            return a.company.companyName.localeCompare(b.company.companyName);
+          case 'name-desc':
+            return b.company.companyName.localeCompare(a.company.companyName);
+          case 'founded-newest':
+            return b.company.foundedYear - a.company.foundedYear;
+          case 'founded-oldest':
+            return a.company.foundedYear - b.company.foundedYear;
+          case 'relevance':
+          default:
+            return b.score - a.score;
+        }
+      })
+      .map(({ company }) => company);
+  }, [filteredCompanies, normalizedQuery, sortOption]);
+
+  const summary = useMemo(() => {
+    const activeCompanies = filteredCompanies.filter((company) => company.status === 'Active').length;
+    const uniqueCountries = new Set(filteredCompanies.map((company) => company.country));
+    const uniqueIndustries = new Set(filteredCompanies.map((company) => company.industry));
+
+    return {
+      activeCompanies,
+      totalCountries: uniqueCountries.size,
+      totalIndustries: uniqueIndustries.size,
+    };
+  }, [filteredCompanies]);
+
   useEffect(() => {
-    // Only show results if there's a search query or filters applied
-    if (!searchQuery && selectedCountry === 'all' && selectedIndustry === 'all') {
-      setFilteredCompanies([]);
-      return;
-    }
+    setDisplayedCount(10);
+    setSelectedCompany(null);
+  }, [filteredCompanies, sortOption]);
 
-    let filtered = companies;
+  const visibleCompanies = sortedCompanies.slice(0, displayedCount);
 
-    if (searchQuery) {
-      filtered = filtered.filter(company =>
-        company.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        company.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+  const shouldRenderResults =
+    normalizedQuery.length > 0 ||
+    selectedCountry !== 'all' ||
+    selectedIndustry !== 'all' ||
+    selectedEmployeeRange !== 'all' ||
+    selectedStatus !== 'all';
 
-    if (selectedCountry && selectedCountry !== 'all') {
-      filtered = filtered.filter(company => getCountryCode(company.country) === selectedCountry);
-    }
+  const remainingCount = Math.max(sortedCompanies.length - displayedCount, 0);
 
-    if (selectedIndustry && selectedIndustry !== 'all') {
-      filtered = filtered.filter(company => company.industry === selectedIndustry);
-    }
-
-    setFilteredCompanies(filtered);
-    setDisplayedCount(10); // Reset to show first 10 companies when filters change
-  }, [searchQuery, selectedCountry, selectedIndustry]);
-
-  const checkGoogleMaps = async (company: Company) => {
+  const openMaps = (company: Company) => {
     const query = `${company.companyName} ${company.address}`;
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     window.open(mapsUrl, '_blank');
   };
 
+  if (!shouldRenderResults) {
+    return (
+      <Card className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-white/70 shadow-[0_35px_80px_-30px_rgba(15,23,42,0.65)] backdrop-blur">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-center gap-2 text-2xl font-semibold text-white">
+            <Sparkles className="h-6 w-6 text-sky-300" />
+            Start exploring companies
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-white/70">
+          <p>Use the search panel above to filter by country, industry, size, and status.</p>
+          <p className="text-sm">Tip: combine keywords with filters to surface highly targeted results.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-foreground">
-          Displayed Companies: {Math.min(displayedCount, filteredCompanies.length)} of {filteredCompanies.length}
-        </h2>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold text-white">
+            Showing {visibleCompanies.length} of {sortedCompanies.length} companies
+          </h2>
+          <p className="text-sm text-white/60">
+            {summary.activeCompanies.toLocaleString()} active companies · {summary.totalCountries} countries · {summary.totalIndustries} industries
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-white/60" aria-hidden="true" />
+          <Select value={sortOption} onValueChange={(value) => onSortChange(value as SortOption)}>
+            <SelectTrigger className="w-[210px] border-white/10 bg-slate-950/60 text-white focus:ring-white/20 focus:ring-offset-0">
+              <SelectValue placeholder="Sort results" />
+            </SelectTrigger>
+            <SelectContent className="border-white/10 bg-slate-950 text-white">
+              {sortOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredCompanies.slice(0, displayedCount).map((company, index) => (
-          <Card key={index} className="bg-card text-card-foreground shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-up">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {visibleCompanies.map((company) => (
+          <Card
+            key={company.companyName}
+            className="rounded-3xl border border-white/10 bg-slate-950/60 text-white/80 shadow-[0_35px_80px_-30px_rgba(15,23,42,0.6)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_45px_100px_-30px_rgba(56,189,248,0.35)]"
+          >
             <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-primary rounded-lg">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-xl bg-gradient-to-br from-business-accent/40 via-sky-500/30 to-purple-500/20 p-2">
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg leading-tight">{company.companyName}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{company.krsNIPorHRB}</p>
+                    <CardTitle className="text-lg leading-tight text-white">
+                      {highlightMatch(company.companyName, normalizedQuery)}
+                    </CardTitle>
+                    <p className="text-sm text-white/60">
+                      {highlightMatch(company.krsNIPorHRB, normalizedQuery)}
+                    </p>
                   </div>
                 </div>
-                <Badge variant={company.status === 'Active' ? 'default' : 'secondary'}>
+                <Badge
+                  variant="secondary"
+                  className={`border-white/20 px-3 py-1 text-xs font-medium ${
+                    company.status === 'Active'
+                      ? 'bg-emerald-400/20 text-emerald-200'
+                      : 'bg-white/10 text-white/70'
+                  }`}
+                >
                   {company.status}
                 </Badge>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">{company.description}</p>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <p className="line-clamp-3 text-sm text-white/70">
+                {highlightMatch(company.description, normalizedQuery)}
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 text-sm text-white/70">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-business-accent" />
+                  <MapPin className="h-4 w-4 text-sky-300" />
                   <span>{company.country}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-business-accent" />
+                  <Building2 className="h-4 w-4 text-sky-300" />
                   <span>{company.industry}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-business-accent" />
+                  <Users className="h-4 w-4 text-sky-300" />
                   <span>{company.employeeCount}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-business-accent" />
+                  <Calendar className="h-4 w-4 text-sky-300" />
                   <span>Founded {company.foundedYear}</span>
                 </div>
               </div>
-              
-              <div className="pt-2">
-                <p className="text-xs text-muted-foreground mb-2">Address:</p>
-                <p className="text-sm">{company.address}</p>
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                {company.productsAndServices.slice(0, 3).map((service) => (
+                  <Badge key={service} variant="outline" className="border-white/20 text-xs text-white/70">
+                    {service}
+                  </Badge>
+                ))}
               </div>
-              
+
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 border-white/20 text-white/80 transition hover:bg-white/10 hover:text-white"
                   onClick={() => setSelectedCompany(company)}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  View Details
+                  View details
                 </Button>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  onClick={() => checkGoogleMaps(company)}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+                  onClick={() => openMaps(company)}
                 >
                   🗺️ Maps
                 </Button>
@@ -165,28 +308,28 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
         ))}
       </div>
 
-      {/* Show More Button */}
-      {filteredCompanies.length > displayedCount && (
+      {remainingCount > 0 && (
         <div className="flex justify-center mt-6">
-          <Button 
-            variant="outline" 
-            onClick={() => setDisplayedCount(prev => prev + 10)}
-            className="px-8"
+          <Button
+            variant="outline"
+            onClick={() => setDisplayedCount((prev) => prev + 10)}
+            className="px-8 border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
           >
-            Show more ({filteredCompanies.length - displayedCount} remaining)
+            Show more ({remainingCount} remaining)
           </Button>
         </div>
       )}
 
-      {filteredCompanies.length === 0 && (searchQuery || selectedCountry !== 'all' || selectedIndustry !== 'all') && (
-        <Card className="bg-card text-card-foreground p-8 text-center">
-          <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">No companies found</h3>
-          <p className="text-muted-foreground">Try adjusting your search criteria or filters.</p>
+      {sortedCompanies.length === 0 && (
+        <Card className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-white/70 backdrop-blur">
+          <Building2 className="mx-auto mb-4 h-12 w-12 text-white/40" />
+          <h3 className="mb-2 text-lg font-medium text-white">No companies found</h3>
+          <p className="text-sm">
+            Refine your filters or broaden the search criteria to discover more businesses.
+          </p>
         </Card>
       )}
 
-      {/* Company Details Modal */}
       <Dialog open={!!selectedCompany} onOpenChange={() => setSelectedCompany(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           {selectedCompany && (
@@ -199,7 +342,7 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
                   {selectedCompany.companyName}
                 </DialogTitle>
               </DialogHeader>
-              
+
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -207,69 +350,100 @@ export const CompanyResults = ({ searchQuery, selectedCountry, selectedIndustry 
                       <h3 className="font-semibold mb-2">Company Information</h3>
                       <div className="space-y-2 text-sm">
                         <p><strong>Registration:</strong> {selectedCompany.krsNIPorHRB}</p>
-                        <p><strong>Status:</strong> <Badge variant={selectedCompany.status === 'Active' ? 'default' : 'secondary'}>{selectedCompany.status}</Badge></p>
+                        <p>
+                          <strong>Status:</strong>{' '}
+                          <Badge variant={selectedCompany.status === 'Active' ? 'default' : 'secondary'}>
+                            {selectedCompany.status}
+                          </Badge>
+                        </p>
                         <p><strong>Founded:</strong> {selectedCompany.foundedYear}</p>
                         <p><strong>Industry:</strong> {selectedCompany.industry}</p>
                         <p><strong>Employees:</strong> {selectedCompany.employeeCount}</p>
                         <p><strong>Revenue:</strong> {selectedCompany.revenue}</p>
                       </div>
                     </div>
-                    
+
                     <div>
                       <h3 className="font-semibold mb-2">Contact Information</h3>
                       <div className="space-y-2 text-sm">
                         <p><strong>Address:</strong> {selectedCompany.address}</p>
-                        <p><strong>Website:</strong> <a href={selectedCompany.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{selectedCompany.website}</a></p>
-                        <p><strong>Email:</strong> <a href={`mailto:${selectedCompany.contactEmail}`} className="text-primary hover:underline">{selectedCompany.contactEmail}</a></p>
-                        <p><strong>Phone:</strong> <a href={`tel:${selectedCompany.phoneNumber}`} className="text-primary hover:underline">{selectedCompany.phoneNumber}</a></p>
+                        <p>
+                          <strong>Website:</strong>{' '}
+                          <a
+                            href={selectedCompany.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            {selectedCompany.website}
+                          </a>
+                        </p>
+                        <p>
+                          <strong>Email:</strong>{' '}
+                          <a href={`mailto:${selectedCompany.contactEmail}`} className="text-primary hover:underline">
+                            {selectedCompany.contactEmail}
+                          </a>
+                        </p>
+                        <p>
+                          <strong>Phone:</strong>{' '}
+                          <a href={`tel:${selectedCompany.phoneNumber}`} className="text-primary hover:underline">
+                            {selectedCompany.phoneNumber}
+                          </a>
+                        </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <h3 className="font-semibold mb-2">Management</h3>
                       <div className="space-y-1">
-                        {selectedCompany.management.map((manager, idx) => (
-                          <p key={idx} className="text-sm">{manager}</p>
+                        {selectedCompany.management.map((manager) => (
+                          <p key={manager} className="text-sm">
+                            {manager}
+                          </p>
                         ))}
                       </div>
                     </div>
-                    
+
                     <div>
                       <h3 className="font-semibold mb-2">Products & Services</h3>
                       <div className="flex flex-wrap gap-2">
-                        {selectedCompany.productsAndServices.map((service, idx) => (
-                          <Badge key={idx} variant="secondary">{service}</Badge>
+                        {selectedCompany.productsAndServices.map((service) => (
+                          <Badge key={service} variant="secondary">
+                            {service}
+                          </Badge>
                         ))}
                       </div>
                     </div>
-                    
+
                     <div>
                       <h3 className="font-semibold mb-2">Technologies</h3>
                       <div className="flex flex-wrap gap-2">
-                        {selectedCompany.technologiesUsed.map((tech, idx) => (
-                          <Badge key={idx} variant="outline">{tech}</Badge>
+                        {selectedCompany.technologiesUsed.map((tech) => (
+                          <Badge key={tech} variant="outline">
+                            {tech}
+                          </Badge>
                         ))}
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-semibold mb-2">Description</h3>
                   <p className="text-sm text-muted-foreground">{selectedCompany.description}</p>
                 </div>
-                
+
                 <div className="flex gap-2 pt-4">
-                  <Button onClick={() => checkGoogleMaps(selectedCompany)} variant="outline">
+                  <Button onClick={() => openMaps(selectedCompany)} variant="outline">
                     🗺️ Check on Google Maps
                   </Button>
                   <Button onClick={() => window.open(selectedCompany.website, '_blank')} variant="outline">
                     🌐 Visit Website
                   </Button>
                 </div>
-                
+
                 <p className="text-xs text-muted-foreground">Last updated: {selectedCompany.lastUpdated}</p>
               </div>
             </>

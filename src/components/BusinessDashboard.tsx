@@ -3,33 +3,12 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Building2, Globe, Users } from 'lucide-react';
 import companiesData from '@/data/database.json';
+import { countryNameToCode, countryCodeToName } from '@/lib/location';
+import type { Company } from '@/types/company';
 
 interface BusinessDashboardProps {
   selectedCountry: string;
 }
-
-interface Company {
-  companyName: string;
-  country: string;
-  industry: string;
-  employeeCount: string;
-  foundedYear: number;
-  status: string;
-}
-
-const getCountryCode = (countryName: string) => {
-  const countries: Record<string, string> = {
-    'Poland': 'PL',
-    'Germany': 'DE', 
-    'United Kingdom': 'GB',
-    'United States': 'US',
-    'France': 'FR',
-    'Netherlands': 'NL',
-    'Canada': 'CA',
-    'Australia': 'AU',
-  };
-  return countries[countryName] || countryName;
-};
 
 export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) => {
   const [industryData, setIndustryData] = useState<any[]>([]);
@@ -48,8 +27,8 @@ export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) =
     
     // Filter by country if selected
     if (selectedCountry && selectedCountry !== 'all') {
-      filteredCompanies = companies.filter(company => 
-        getCountryCode(company.country) === selectedCountry
+      filteredCompanies = companies.filter(company =>
+        countryNameToCode(company.country) === selectedCountry
       );
     }
 
@@ -99,71 +78,71 @@ export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) =
     });
   }, [selectedCountry]);
 
-  const countryName = selectedCountry ? 
-    {'PL': 'Poland', 'DE': 'Germany', 'GB': 'United Kingdom', 'US': 'United States'}[selectedCountry] || selectedCountry
+  const countryName = selectedCountry && selectedCountry !== 'all'
+    ? countryCodeToName(selectedCountry)
     : 'All Countries';
 
   return (
     <div className="space-y-8">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-foreground mb-2">Business Analytics</h2>
-        <p className="text-muted-foreground">
+      <div className="text-center text-white">
+        <h2 className="mb-2 text-3xl font-bold">Business Analytics</h2>
+        <p className="text-white/60">
           Comprehensive insights for {countryName}
         </p>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="shadow-soft">
+        <Card className="rounded-3xl border border-white/10 bg-slate-950/60 text-white shadow-[0_35px_80px_-40px_rgba(15,23,42,0.7)]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Companies</p>
-                <p className="text-2xl font-bold text-foreground">{countryStats.totalCompanies.toLocaleString()}</p>
+                <p className="text-sm text-white/60">Total Companies</p>
+                <p className="text-2xl font-bold text-white">{countryStats.totalCompanies.toLocaleString()}</p>
               </div>
-              <div className="p-3 bg-gradient-primary rounded-lg">
+              <div className="rounded-lg bg-gradient-to-br from-business-accent/40 via-sky-500/30 to-purple-500/20 p-3">
                 <Building2 className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
+        <Card className="rounded-3xl border border-white/10 bg-slate-950/60 text-white shadow-[0_35px_80px_-40px_rgba(15,23,42,0.7)]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active Companies</p>
-                <p className="text-2xl font-bold text-business-success">{countryStats.activeCompanies.toLocaleString()}</p>
+                <p className="text-sm text-white/60">Active Companies</p>
+                <p className="text-2xl font-bold text-emerald-300">{countryStats.activeCompanies.toLocaleString()}</p>
               </div>
-              <div className="p-3 bg-business-success rounded-lg">
+              <div className="rounded-lg bg-emerald-500/30 p-3">
                 <TrendingUp className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
+        <Card className="rounded-3xl border border-white/10 bg-slate-950/60 text-white shadow-[0_35px_80px_-40px_rgba(15,23,42,0.7)]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">New This Year</p>
-                <p className="text-2xl font-bold text-business-accent">{countryStats.newThisYear}</p>
+                <p className="text-sm text-white/60">New This Year</p>
+                <p className="text-2xl font-bold text-sky-300">{countryStats.newThisYear}</p>
               </div>
-              <div className="p-3 bg-business-accent rounded-lg">
+              <div className="rounded-lg bg-sky-500/30 p-3">
                 <Globe className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
+        <Card className="rounded-3xl border border-white/10 bg-slate-950/60 text-white shadow-[0_35px_80px_-40px_rgba(15,23,42,0.7)]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Average Age</p>
-                <p className="text-2xl font-bold text-business-warning">{countryStats.averageAge} years</p>
+                <p className="text-sm text-white/60">Average Age</p>
+                <p className="text-2xl font-bold text-amber-300">{countryStats.averageAge} years</p>
               </div>
-              <div className="p-3 bg-business-warning rounded-lg">
+              <div className="rounded-lg bg-amber-500/30 p-3">
                 <Users className="h-6 w-6 text-white" />
               </div>
             </div>
@@ -173,10 +152,10 @@ export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) =
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="shadow-medium">
+        <Card className="rounded-3xl border border-white/10 bg-slate-950/60 text-white shadow-[0_45px_100px_-40px_rgba(56,189,248,0.35)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Building2 className="h-5 w-5 text-sky-300" />
               Companies by Industry
             </CardTitle>
           </CardHeader>
@@ -203,10 +182,10 @@ export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) =
           </CardContent>
         </Card>
 
-        <Card className="shadow-medium">
+        <Card className="rounded-3xl border border-white/10 bg-slate-950/60 text-white shadow-[0_45px_100px_-40px_rgba(56,189,248,0.35)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Users className="h-5 w-5 text-sky-300" />
               Companies by Employee Size
             </CardTitle>
           </CardHeader>
