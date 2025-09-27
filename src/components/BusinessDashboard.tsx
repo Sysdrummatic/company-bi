@@ -1,86 +1,103 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Building2, Globe, Users } from 'lucide-react';
-import companiesData from '@/data/database.json';
 import { countryNameToCode, countryCodeToName } from '@/lib/location';
-import type { Company } from '@/types/company';
+import { useCompanies } from '@/hooks/use-companies';
 
 interface BusinessDashboardProps {
   selectedCountry: string;
 }
 
 export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) => {
-  const [industryData, setIndustryData] = useState<any[]>([]);
-  const [employeeSizeData, setEmployeeSizeData] = useState<any[]>([]);
-  const [countryStats, setCountryStats] = useState<any>({
-    totalCompanies: 0,
-    activeCompanies: 0,
-    newThisYear: 0,
-    averageAge: 0
-  });
+  const { data: companies = [], isLoading, isError, error } = useCompanies();
 
-  const companies: Company[] = companiesData as Company[];
+  const industryColors = useMemo(
+    () => [
+      'hsl(var(--business-primary))',
+      'hsl(var(--business-accent))',
+      'hsl(var(--business-secondary))',
+      'hsl(var(--business-success))',
+      'hsl(var(--business-warning))',
+      'hsl(var(--muted))',
+    ],
+    []
+  );
 
-  useEffect(() => {
-    let filteredCompanies = companies;
-    
-    // Filter by country if selected
-    if (selectedCountry && selectedCountry !== 'all') {
-      filteredCompanies = companies.filter(company =>
-        countryNameToCode(company.country) === selectedCountry
-      );
-    }
+  const { industryData, employeeSizeData, countryStats } = useMemo(() => {
+    const filteredCompanies =
+      selectedCountry && selectedCountry !== 'all'
+        ? companies.filter((company) => countryNameToCode(company.country) === selectedCountry)
+        : companies;
 
-    // Calculate industry distribution
     const industryCount: Record<string, number> = {};
-    filteredCompanies.forEach(company => {
+    filteredCompanies.forEach((company) => {
       industryCount[company.industry] = (industryCount[company.industry] || 0) + 1;
     });
 
-    const industryColors = ['hsl(var(--business-primary))', 'hsl(var(--business-accent))', 'hsl(var(--business-secondary))', 'hsl(var(--business-success))', 'hsl(var(--business-warning))', 'hsl(var(--muted))'];
     const industryDataProcessed = Object.entries(industryCount)
       .map(([name, value], index) => ({
         name,
         value,
-        color: industryColors[index % industryColors.length]
+        color: industryColors[index % industryColors.length],
       }))
       .sort((a, b) => b.value - a.value);
 
-    setIndustryData(industryDataProcessed);
-
-    // Calculate employee size distribution
     const sizeCount: Record<string, number> = {};
-    filteredCompanies.forEach(company => {
+    filteredCompanies.forEach((company) => {
       const size = company.employeeCount;
       sizeCount[size] = (sizeCount[size] || 0) + 1;
     });
 
     const employeeDataProcessed = Object.entries(sizeCount)
-      .map(([name, companies]) => ({ name, companies }))
+      .map(([name, count]) => ({ name, companies: count }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    setEmployeeSizeData(employeeDataProcessed);
-
-    // Calculate stats
-    const activeCompanies = filteredCompanies.filter(c => c.status === 'Active').length;
     const currentYear = new Date().getFullYear();
-    const newThisYear = filteredCompanies.filter(c => c.foundedYear >= currentYear - 1).length;
-    const avgAge = filteredCompanies.length > 0 
-      ? filteredCompanies.reduce((sum, c) => sum + (currentYear - c.foundedYear), 0) / filteredCompanies.length 
-      : 0;
+    const activeCompanies = filteredCompanies.filter((company) => company.status === 'Active').length;
+    const newThisYear = filteredCompanies.filter((company) => company.foundedYear >= currentYear - 1).length;
+    const avgAge =
+      filteredCompanies.length > 0
+        ? filteredCompanies.reduce((sum, company) => sum + (currentYear - company.foundedYear), 0) /
+          filteredCompanies.length
+        : 0;
 
-    setCountryStats({
-      totalCompanies: filteredCompanies.length,
-      activeCompanies,
-      newThisYear,
-      averageAge: Math.round(avgAge * 10) / 10
-    });
-  }, [selectedCountry]);
+    return {
+      industryData: industryDataProcessed,
+      employeeSizeData: employeeDataProcessed,
+      countryStats: {
+        totalCompanies: filteredCompanies.length,
+        activeCompanies,
+        newThisYear,
+        averageAge: Math.round(avgAge * 10) / 10,
+      },
+    };
+  }, [companies, selectedCountry, industryColors]);
 
   const countryName = selectedCountry && selectedCountry !== 'all'
     ? countryCodeToName(selectedCountry)
     : 'All Countries';
+
+  if (isLoading) {
+    return (
+      <Card className="rounded-3xl border border-white/10 bg-slate-950/60 text-white shadow-[0_35px_80px_-40px_rgba(15,23,42,0.7)]">
+        <CardContent className="p-6 text-center text-white/70">Loading analytics...</CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    const errorMessage = error instanceof Error ? error.message : 'Unexpected error while loading analytics.';
+    return (
+      <Card className="rounded-3xl border border-white/10 bg-slate-950/60 text-white shadow-[0_35px_80px_-40px_rgba(15,23,42,0.7)]">
+        <CardContent className="p-6 text-center text-white/70">
+          <p className="font-semibold text-white">Unable to load analytics</p>
+          <p className="mt-2 text-sm text-white/60">{errorMessage}</p>
+          <p className="mt-2 text-xs text-white/50">Ensure that the API server is running and try again.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-8">

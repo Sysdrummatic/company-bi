@@ -1,4 +1,5 @@
 export interface Company {
+  id: number;
   companyName: string;
   krsNIPorHRB: string;
   status: string;
@@ -16,4 +17,29 @@ export interface Company {
   productsAndServices: string[];
   technologiesUsed: string[];
   lastUpdated: string;
+  ownerId: number | null;
+  isPublic: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CompanyPayload {
+  companyName: string;
+  krsNIPorHRB: string;
+  status: string;
+  description: string;
+  country: string;
+  industry: string;
+  employeeCount: string;
+  foundedYear: number;
+  address: string;
+  website: string;
+  contactEmail: string;
+  phoneNumber: string;
+  revenue: string;
+  management: string[];
+  productsAndServices: string[];
+  technologiesUsed: string[];
+  lastUpdated: string;
+  isPublic?: boolean;
 }

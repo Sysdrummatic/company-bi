@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import companiesData from '@/data/database.json';
 import type { Company } from '@/types/company';
 import { countryNameToCode } from '@/lib/location';
+import { useCompanies } from '@/hooks/use-companies';
 
 interface CompanyResultsProps {
   searchQuery: string;
@@ -68,8 +68,6 @@ const computeRelevanceScore = (company: Company, normalizedQuery: string) => {
   return score;
 };
 
-const companies: Company[] = companiesData as Company[];
-
 export const CompanyResults = ({
   searchQuery,
   selectedCountry,
@@ -81,6 +79,7 @@ export const CompanyResults = ({
 }: CompanyResultsProps) => {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [displayedCount, setDisplayedCount] = useState(10);
+  const { data: companies = [], isLoading, isError, error } = useCompanies();
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -111,7 +110,7 @@ export const CompanyResults = ({
 
       return matchesQuery && matchesCountry && matchesIndustry && matchesEmployeeRange && matchesStatus;
     });
-  }, [normalizedQuery, selectedCountry, selectedIndustry, selectedEmployeeRange, selectedStatus]);
+  }, [companies, normalizedQuery, selectedCountry, selectedIndustry, selectedEmployeeRange, selectedStatus]);
 
   const sortedCompanies = useMemo(() => {
     const companiesWithScore = filteredCompanies.map((company) => ({
@@ -189,6 +188,32 @@ export const CompanyResults = ({
     );
   }
 
+  if (isLoading) {
+    return (
+      <Card className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-white/70 backdrop-blur">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold text-white">Loading company data...</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-white/60">Please wait while we synchronise data from the database.</CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    const errorMessage = error instanceof Error ? error.message : 'Unexpected error while loading companies.';
+    return (
+      <Card className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-white/70 backdrop-blur">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold text-white">Unable to load companies</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-white/60">
+          <p>{errorMessage}</p>
+          <p>Verify that the API server is running and reachable, then try again.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -221,7 +246,7 @@ export const CompanyResults = ({
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {visibleCompanies.map((company) => (
           <Card
-            key={company.companyName}
+            key={company.id}
             className="rounded-3xl border border-white/10 bg-slate-950/60 text-white/80 shadow-[0_35px_80px_-30px_rgba(15,23,42,0.6)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_45px_100px_-30px_rgba(56,189,248,0.35)]"
           >
             <CardHeader className="pb-3">
