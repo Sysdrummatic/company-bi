@@ -1,44 +1,45 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Building2, MapPin, Users, Calendar, Phone, Mail, Globe, DollarSign, User, Code, Package } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Users, Calendar, Phone, Mail, Globe, DollarSign, User, Code, Package, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import companiesData from '@/data/database.json';
-
-interface Company {
-  companyName: string;
-  krsNIPorHRB: string;
-  status: string;
-  description: string;
-  country: string;
-  industry: string;
-  employeeCount: string;
-  foundedYear: number;
-  address: string;
-  website: string;
-  contactEmail: string;
-  phoneNumber: string;
-  revenue: string;
-  management: string[];
-  productsAndServices: string[];
-  technologiesUsed: string[];
-  lastUpdated: string;
-}
+import { useCompany } from '@/hooks/use-companies';
+import { useAuth } from '@/context/AuthContext';
 
 const CompanyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [company, setCompany] = useState<Company | null>(null);
+  const { token, user } = useAuth();
+  const companyId = id ? Number(id) : undefined;
+  const { data: company, isLoading, isError, error } = useCompany(
+    typeof companyId === 'number' && Number.isFinite(companyId) ? companyId : undefined,
+    token
+  );
 
-  useEffect(() => {
-    if (id) {
-      const companyIndex = parseInt(id);
-      const foundCompany = companiesData[companyIndex] as Company;
-      setCompany(foundCompany);
-    }
-  }, [id]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-semibold mb-2">Loading company profile...</h2>
+          <p className="text-sm text-muted-foreground">We are fetching the latest details from the database.</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isError) {
+    const errorMessage = error instanceof Error ? error.message : 'Unexpected error while loading the company profile.';
+    return (
+      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-semibold mb-4">Unable to load company</h2>
+          <p className="mb-4 text-sm text-muted-foreground">{errorMessage}</p>
+          <Button onClick={() => navigate('/')}>Return to Search</Button>
+        </Card>
+      </div>
+    );
+  }
 
   if (!company) {
     return (
@@ -54,6 +55,8 @@ const CompanyDetails = () => {
     );
   }
 
+  const isOwner = company.ownerId !== null && user?.id === company.ownerId;
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       <div className="container mx-auto px-4 py-8">
@@ -68,7 +71,7 @@ const CompanyDetails = () => {
           {/* Company Header */}
           <Card className="shadow-medium">
             <CardHeader>
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-gradient-primary rounded-lg">
                     <Building2 className="h-8 w-8 text-white" />
@@ -78,11 +81,25 @@ const CompanyDetails = () => {
                     <p className="text-muted-foreground">{company.krsNIPorHRB}</p>
                   </div>
                 </div>
-                <Badge variant={company.status === 'Active' ? 'default' : 'secondary'}>
-                  {company.status}
-                </Badge>
+                <div className="flex flex-col items-end gap-2 text-right">
+                  <Badge variant={company.status === 'Active' ? 'default' : 'secondary'}>{company.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={company.isPublic ? 'default' : 'secondary'} className={company.isPublic ? '' : 'bg-slate-200 text-slate-900'}>
+                      {company.isPublic ? 'Publiczna' : 'Prywatna'}
+                    </Badge>
+                    {isOwner && (
+                      <Badge variant="outline">Twoja firma</Badge>
+                    )}
+                  </div>
+                </div>
               </div>
               <p className="text-lg text-muted-foreground mt-4">{company.description}</p>
+              {!company.isPublic && !isOwner && (
+                <div className="mt-4 flex items-center gap-2 text-sm text-amber-500">
+                  <Lock className="h-4 w-4" />
+                  Dane tej firmy są prywatne. Aby je wyświetlić, zaloguj się jako właściciel.
+                </div>
+              )}
             </CardHeader>
           </Card>
 

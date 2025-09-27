@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { SearchHeader } from '@/components/SearchHeader';
 import { SearchFilters } from '@/components/SearchFilters';
 import { CompanyResults, SortOption } from '@/components/CompanyResults';
@@ -7,8 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ArrowUpRight, CheckCircle2, Compass } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('all');
   const [selectedIndustry, setSelectedIndustry] = useState('all');
@@ -25,6 +29,11 @@ const Index = () => {
     setSelectedEmployeeRange('all');
     setSelectedStatus('all');
     setSortOption('relevance');
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -62,13 +71,29 @@ const Index = () => {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="text-white/80 hover:text-white">
-              Sign in
-            </Button>
-            <Button className="rounded-full bg-white px-5 py-2 text-slate-900 hover:bg-white/90">
-              Request demo
-              <ArrowUpRight className="ml-2 h-4 w-4" />
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <span className="hidden text-white/70 md:inline">Witaj, {user?.username}</span>
+                <Button variant="ghost" className="text-white/80 hover:text-white" asChild>
+                  <Link to="/dashboard">Panel użytkownika</Link>
+                </Button>
+                <Button className="rounded-full bg-white px-5 py-2 text-slate-900 hover:bg-white/90" onClick={handleLogout}>
+                  Wyloguj
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" className="text-white/80 hover:text-white" asChild>
+                  <Link to="/login">Zaloguj się</Link>
+                </Button>
+                <Button className="rounded-full bg-white px-5 py-2 text-slate-900 hover:bg-white/90" asChild>
+                  <Link to="/register">
+                    Utwórz konto
+                    <ArrowUpRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </header>
 
