@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Company, CompanyPayload } from '@/types/company';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000';
+import { buildApiUrl } from '@/lib/api';
 
 interface FetchCompaniesOptions {
   mine?: boolean;
@@ -9,7 +8,7 @@ interface FetchCompaniesOptions {
 }
 
 const fetchCompanies = async ({ mine = false, token }: FetchCompaniesOptions = {}): Promise<Company[]> => {
-  const url = new URL(`${API_BASE_URL}/api/companies`);
+  const url = new URL(buildApiUrl('/api/companies'));
 
   if (mine) {
     url.searchParams.set('mine', 'true');
@@ -45,7 +44,7 @@ export const useCompanies = ({ mine = false, token, enabled = true, staleTime = 
   });
 
 export const fetchCompanyById = async (id: number, token?: string | null): Promise<Company | null> => {
-  const response = await fetch(`${API_BASE_URL}/api/companies/${id}`, {
+  const response = await fetch(buildApiUrl(`/api/companies/${id}`), {
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
@@ -72,7 +71,7 @@ export const useCompany = (id?: number, token?: string | null) =>
   });
 
 const createCompanyRequest = async (payload: CompanyPayload, token: string): Promise<Company> => {
-  const response = await fetch(`${API_BASE_URL}/api/companies`, {
+  const response = await fetch(buildApiUrl('/api/companies'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
