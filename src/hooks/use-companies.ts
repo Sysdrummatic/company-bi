@@ -1,33 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Company, CompanyPayload } from '@/types/company';
-import { buildApiUrl } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FetchCompaniesOptions {
   mine?: boolean;
-  token?: string | null;
+  userId?: string | null;
 }
 
-const fetchCompanies = async ({ mine = false, token }: FetchCompaniesOptions = {}): Promise<Company[]> => {
-  const url = new URL(buildApiUrl('/api/companies'));
-
-  if (mine) {
-    url.searchParams.set('mine', 'true');
+const fetchCompanies = async ({ mine = false, userId }: FetchCompaniesOptions = {}): Promise<Company[]> => {
+  let query = supabase.from('companies').select('*');
+  
+  if (mine && userId) {
+    query = query.eq('user_id', userId);
+  } else {
+    query = query.eq('is_public', true);
   }
-
-  const response = await fetch(url.toString(), {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
-
-  if (response.status === 401) {
-    throw new Error('Nie masz uprawnień do wyświetlenia tych danych.');
-  }
-
-  if (!response.ok) {
+  
+  const { data, error } = await query.order('created_at', { ascending: false });
+  
+  if (error) {
     throw new Error('Nie udało się pobrać listy firm');
   }
-
-  const data = (await response.json()) as Company[];
-  return data;
+  
+  return data || [];
 };
 
 interface UseCompaniesOptions extends FetchCompaniesOptions {
@@ -35,76 +30,61 @@ interface UseCompaniesOptions extends FetchCompaniesOptions {
   staleTime?: number;
 }
 
-export const useCompanies = ({ mine = false, token, enabled = true, staleTime = 1000 * 60 * 5 }: UseCompaniesOptions = {}) =>
+export const useCompanies = ({ mine = false, userId, enabled = true, staleTime = 1000 * 60 * 5 }: UseCompaniesOptions = {}) =>
   useQuery({
-    queryKey: ['companies', mine ? 'mine' : 'public', token ?? null],
-    queryFn: () => fetchCompanies({ mine, token }),
-    enabled: enabled && (!mine || Boolean(token)),
+    queryKey: ['companies', mine ? 'mine' : 'public', userId ?? null],
+    queryFn: () => fetchCompanies({ mine, userId }),
+    enabled: enabled && (!mine || Boolean(userId)),
     staleTime,
   });
 
-export const fetchCompanyById = async (id: number, token?: string | null): Promise<Company | null> => {
-  const response = await fetch(buildApiUrl(`/api/companies/${id}`), {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
+export const fetchCompanyById = async (id: string): Promise<Company | null> => {
+  const { data, error } = await supabase
+    .from('companies')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
 
-  if (response.status === 404) {
-    return null;
-  }
-
-  if (response.status === 403) {
-    throw new Error('Nie masz dostępu do tej firmy.');
-  }
-
-  if (!response.ok) {
+  if (error) {
     throw new Error('Nie udało się pobrać danych firmy');
   }
 
-  return (await response.json()) as Company;
+  return data;
 };
 
-export const useCompany = (id?: number, token?: string | null) =>
+export const useCompany = (id?: string) =>
   useQuery({
-    queryKey: ['companies', id, token ?? null],
-    queryFn: () => fetchCompanyById(id as number, token),
-    enabled: typeof id === 'number' && Number.isFinite(id),
+    queryKey: ['companies', id],
+    queryFn: () => fetchCompanyById(id as string),
+    enabled: Boolean(id),
   });
 
-const createCompanyRequest = async (payload: CompanyPayload, token: string): Promise<Company> => {
-  const response = await fetch(buildApiUrl('/api/companies'), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
+const createCompanyRequest = async (payload: CompanyPayload, userId: string): Promise<Company> => {
+  const { data, error } = await supabase
+    .from('companies')
+    .insert({
+      ...payload,
+      user_id: userId,
+    })
+    .select()
+    .single();
 
-  if (!response.ok) {
-    let message = 'Nie udało się zapisać firmy';
-    try {
-      const data = (await response.json()) as { message?: string };
-      if (data?.message) {
-        message = data.message;
-      }
-    } catch (error) {
-      // ignore JSON errors
-    }
-    throw new Error(message);
+  if (error) {
+    throw new Error('Nie udało się zapisać firmy');
   }
 
-  return (await response.json()) as Company;
+  return data;
 };
 
-export const useCreateCompany = (token?: string | null) => {
+export const useCreateCompany = (userId?: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: CompanyPayload) => {
-      if (!token) {
+      if (!userId) {
         throw new Error('Brak autoryzacji.');
       }
-      return createCompanyRequest(payload, token);
+      return createCompanyRequest(payload, userId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['companies', 'mine'] });

@@ -10,12 +10,8 @@ import { useAuth } from '@/context/AuthContext';
 const CompanyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token, user } = useAuth();
-  const companyId = id ? Number(id) : undefined;
-  const { data: company, isLoading, isError, error } = useCompany(
-    typeof companyId === 'number' && Number.isFinite(companyId) ? companyId : undefined,
-    token
-  );
+  const { user } = useAuth();
+  const { data: company, isLoading, isError, error } = useCompany(id);
 
   if (isLoading) {
     return (
@@ -55,7 +51,7 @@ const CompanyDetails = () => {
     );
   }
 
-  const isOwner = company.ownerId !== null && user?.id === company.ownerId;
+  const isOwner = company.user_id !== null && user?.id === company.user_id;
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -77,15 +73,15 @@ const CompanyDetails = () => {
                     <Building2 className="h-8 w-8 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl">{company.companyName}</CardTitle>
-                    <p className="text-muted-foreground">{company.krsNIPorHRB}</p>
+                    <CardTitle className="text-2xl">{company.company_name}</CardTitle>
+                    <p className="text-muted-foreground">{company.krs_nip_or_hrb}</p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2 text-right">
                   <Badge variant={company.status === 'Active' ? 'default' : 'secondary'}>{company.status}</Badge>
                   <div className="flex items-center gap-2">
-                    <Badge variant={company.isPublic ? 'default' : 'secondary'} className={company.isPublic ? '' : 'bg-slate-200 text-slate-900'}>
-                      {company.isPublic ? 'Publiczna' : 'Prywatna'}
+                    <Badge variant={company.is_public ? 'default' : 'secondary'} className={company.is_public ? '' : 'bg-slate-200 text-slate-900'}>
+                      {company.is_public ? 'Publiczna' : 'Prywatna'}
                     </Badge>
                     {isOwner && (
                       <Badge variant="outline">Twoja firma</Badge>
@@ -94,7 +90,7 @@ const CompanyDetails = () => {
                 </div>
               </div>
               <p className="text-lg text-muted-foreground mt-4">{company.description}</p>
-              {!company.isPublic && !isOwner && (
+              {!company.is_public && !isOwner && (
                 <div className="mt-4 flex items-center gap-2 text-sm text-amber-500">
                   <Lock className="h-4 w-4" />
                   Dane tej firmy są prywatne. Aby je wyświetlić, zaloguj się jako właściciel.
@@ -124,11 +120,11 @@ const CompanyDetails = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <Users className="h-4 w-4 text-business-accent" />
-                  <span>{company.employeeCount}</span>
+                  <span>{company.employee_count}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-business-accent" />
-                  <span>Founded in {company.foundedYear}</span>
+                  <span>Founded in {company.founded_year}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <DollarSign className="h-4 w-4 text-business-accent" />
@@ -152,14 +148,14 @@ const CompanyDetails = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-business-accent" />
-                  <a href={`tel:${company.phoneNumber}`} className="text-sm hover:text-primary transition-colors">
-                    {company.phoneNumber}
+                  <a href={`tel:${company.phone_number}`} className="text-sm hover:text-primary transition-colors">
+                    {company.phone_number}
                   </a>
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-business-accent" />
-                  <a href={`mailto:${company.contactEmail}`} className="text-sm hover:text-primary transition-colors">
-                    {company.contactEmail}
+                  <a href={`mailto:${company.contact_email}`} className="text-sm hover:text-primary transition-colors">
+                    {company.contact_email}
                   </a>
                 </div>
                 <div className="flex items-center gap-3">
@@ -201,7 +197,7 @@ const CompanyDetails = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {company.productsAndServices.map((service, index) => (
+                {company.products_and_services.map((service, index) => (
                   <div key={index} className="p-3 bg-muted rounded-lg">
                     <span className="text-sm">{service}</span>
                   </div>
@@ -220,7 +216,7 @@ const CompanyDetails = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {company.technologiesUsed.map((tech, index) => (
+                {company.technologies_used.map((tech, index) => (
                   <Badge key={index} variant="secondary">
                     {tech}
                   </Badge>
@@ -233,7 +229,7 @@ const CompanyDetails = () => {
           <Card className="shadow-medium">
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground text-center">
-                Last updated: {new Date(company.lastUpdated).toLocaleDateString()}
+                Last updated: {company.last_updated ? new Date(company.last_updated).toLocaleDateString() : 'N/A'}
               </p>
             </CardContent>
           </Card>

@@ -73,7 +73,7 @@ const Index = () => {
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <span className="hidden text-white/70 md:inline">Witaj, {user?.username}</span>
+                <span className="hidden text-white/70 md:inline">Witaj, {user?.email}</span>
                 <Button variant="ghost" className="text-white/80 hover:text-white" asChild>
                   <Link to="/dashboard">Panel użytkownika</Link>
                 </Button>
@@ -83,12 +83,9 @@ const Index = () => {
               </>
             ) : (
               <>
-                <Button variant="ghost" className="text-white/80 hover:text-white" asChild>
-                  <Link to="/login">Zaloguj się</Link>
-                </Button>
                 <Button className="rounded-full bg-white px-5 py-2 text-slate-900 hover:bg-white/90" asChild>
-                  <Link to="/register">
-                    Utwórz konto
+                  <Link to="/auth">
+                    Zaloguj się / Utwórz konto
                     <ArrowUpRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

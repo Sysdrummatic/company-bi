@@ -14,7 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          address: string | null
+          company_name: string
+          contact_email: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          employee_count: string | null
+          founded_year: number | null
+          id: string
+          industry: string | null
+          is_public: boolean | null
+          krs_nip_or_hrb: string | null
+          last_updated: string | null
+          management: string[] | null
+          phone_number: string | null
+          products_and_services: string[] | null
+          revenue: string | null
+          status: string
+          technologies_used: string[] | null
+          updated_at: string
+          user_id: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_name: string
+          contact_email?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          employee_count?: string | null
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          is_public?: boolean | null
+          krs_nip_or_hrb?: string | null
+          last_updated?: string | null
+          management?: string[] | null
+          phone_number?: string | null
+          products_and_services?: string[] | null
+          revenue?: string | null
+          status?: string
+          technologies_used?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_name?: string
+          contact_email?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          employee_count?: string | null
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          is_public?: boolean | null
+          krs_nip_or_hrb?: string | null
+          last_updated?: string | null
+          management?: string[] | null
+          phone_number?: string | null
+          products_and_services?: string[] | null
+          revenue?: string | null
+          status?: string
+          technologies_used?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

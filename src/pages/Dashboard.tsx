@@ -21,7 +21,7 @@ const parseList = (value: string) =>
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { token, isAuthenticated, isLoading, user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
 
@@ -57,13 +57,13 @@ const Dashboard = () => {
     isLoading: isLoadingCompanies,
     isError: isCompaniesError,
     error: companiesError,
-  } = useCompanies({ mine: true, token, enabled: isAuthenticated });
+  } = useCompanies({ mine: true, userId: user?.id, enabled: isAuthenticated });
 
-  const createCompany = useCreateCompany(token);
+  const createCompany = useCreateCompany(user?.id);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate('/login');
+      navigate('/auth');
     }
   }, [isAuthenticated, isLoading, navigate]);
 
@@ -75,7 +75,7 @@ const Dashboard = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!token) {
+    if (!user?.id) {
       setError('Musisz być zalogowany, aby dodać firmę.');
       return;
     }
@@ -83,27 +83,26 @@ const Dashboard = () => {
     setError(null);
 
     const payload: CompanyPayload = {
-      companyName: formState.companyName.trim(),
-      krsNIPorHRB: formState.krsNIPorHRB.trim(),
+      company_name: formState.companyName.trim(),
+      krs_nip_or_hrb: formState.krsNIPorHRB.trim(),
       status: formState.status.trim(),
       description: formState.description.trim(),
       country: formState.country.trim(),
       industry: formState.industry.trim(),
-      employeeCount: formState.employeeCount.trim(),
-      foundedYear: Number(formState.foundedYear),
+      employee_count: formState.employeeCount.trim(),
+      founded_year: Number(formState.foundedYear),
       address: formState.address.trim(),
       website: formState.website.trim(),
-      contactEmail: formState.contactEmail.trim(),
-      phoneNumber: formState.phoneNumber.trim(),
+      contact_email: formState.contactEmail.trim(),
+      phone_number: formState.phoneNumber.trim(),
       revenue: formState.revenue.trim(),
       management: parseList(formState.management),
-      productsAndServices: parseList(formState.productsAndServices),
-      technologiesUsed: parseList(formState.technologiesUsed),
-      lastUpdated: formState.lastUpdated ? new Date(formState.lastUpdated).toISOString() : new Date().toISOString(),
-      isPublic: formState.isPublic,
+      products_and_services: parseList(formState.productsAndServices),
+      technologies_used: parseList(formState.technologiesUsed),
+      is_public: formState.isPublic,
     };
 
-    if (!Number.isInteger(payload.foundedYear)) {
+    if (payload.founded_year && !Number.isInteger(payload.founded_year)) {
       setError('Rok założenia musi być liczbą całkowitą.');
       return;
     }
@@ -136,7 +135,7 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle>Twoje firmy</CardTitle>
                 <CardDescription>
-                  Poniżej znajdziesz listę firm utworzonych przez konto {user?.username}. Prywatne wpisy nie pojawią się na stronie
+                  Poniżej znajdziesz listę firm utworzonych przez konto {user?.email}. Prywatne wpisy nie pojawią się na stronie
                   głównej, dopóki nie oznaczysz ich jako publiczne.
                 </CardDescription>
               </CardHeader>
@@ -160,21 +159,21 @@ const Dashboard = () => {
                       <CardHeader className="flex flex-col gap-2">
                         <div className="flex items-center justify-between gap-4">
                           <div>
-                            <CardTitle className="text-lg text-white">{company.companyName}</CardTitle>
+                            <CardTitle className="text-lg text-white">{company.company_name}</CardTitle>
                             <CardDescription>{company.industry}</CardDescription>
                           </div>
                           <div className="flex flex-col items-end gap-1 text-right">
-                            <Badge variant={company.isPublic ? 'default' : 'secondary'} className={company.isPublic ? '' : 'bg-slate-200 text-slate-900'}>
-                              {company.isPublic ? 'Publiczna' : 'Prywatna'}
+                            <Badge variant={company.is_public ? 'default' : 'secondary'} className={company.is_public ? '' : 'bg-slate-200 text-slate-900'}>
+                              {company.is_public ? 'Publiczna' : 'Prywatna'}
                             </Badge>
-                            <span className="text-xs text-white/60">Ostatnia aktualizacja: {new Date(company.lastUpdated).toLocaleDateString()}</span>
+                            <span className="text-xs text-white/60">Ostatnia aktualizacja: {company.last_updated ? new Date(company.last_updated).toLocaleDateString() : 'N/A'}</span>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2 text-sm text-white/80">
                         <p>{company.description}</p>
                         <div className="flex flex-wrap gap-2">
-                          {company.technologiesUsed.slice(0, 4).map((tech) => (
+                          {company.technologies_used.slice(0, 4).map((tech) => (
                             <Badge key={tech} variant="outline">
                               {tech}
                             </Badge>
@@ -302,7 +301,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="text-sm text-white/70">
             <p>
-              Użyj nagłówka <code className="rounded bg-slate-900 px-2 py-0.5">Authorization: Bearer {token ? '...token...' : 'TOKEN'}</code>, aby uwierzytelnić żądanie. Dzięki temu prywatne wpisy pozostaną widoczne tylko dla Ciebie.
+              Użyj odpowiednie uwierzytelnienie Supabase, aby prywatne wpisy pozostały widoczne tylko dla Ciebie.
             </p>
           </CardContent>
         </Card>
