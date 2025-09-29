@@ -45,7 +45,7 @@ export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) =
 
     const sizeCount: Record<string, number> = {};
     filteredCompanies.forEach((company) => {
-      const size = company.employeeCount;
+      const size = company.employee_count;
       sizeCount[size] = (sizeCount[size] || 0) + 1;
     });
 
@@ -55,10 +55,10 @@ export const BusinessDashboard = ({ selectedCountry }: BusinessDashboardProps) =
 
     const currentYear = new Date().getFullYear();
     const activeCompanies = filteredCompanies.filter((company) => company.status === 'Active').length;
-    const newThisYear = filteredCompanies.filter((company) => company.foundedYear >= currentYear - 1).length;
+    const newThisYear = filteredCompanies.filter((company) => company.founded_year && company.founded_year >= currentYear - 1).length;
     const avgAge =
       filteredCompanies.length > 0
-        ? filteredCompanies.reduce((sum, company) => sum + (currentYear - company.foundedYear), 0) /
+        ? filteredCompanies.reduce((sum, company) => sum + (company.founded_year ? currentYear - company.founded_year : 0), 0) /
           filteredCompanies.length
         : 0;
 
