@@ -120,23 +120,25 @@ const Dashboard = () => {
   const isSubmitting = createCompany.isPending;
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      {/* Background Effects */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-hero opacity-30"></div>
+
       <div className="container mx-auto px-4 py-12">
-        <div className="mb-10 text-center text-white">
-          <h1 className="text-3xl font-semibold">Panel użytkownika</h1>
-          <p className="mt-2 text-white/70">
+        <div className="mb-10 text-center animate-in-fade">
+          <h1 className="text-4xl font-bold tracking-tight">Panel użytkownika</h1>
+          <p className="mt-2 text-muted-foreground text-lg">
             Zarządzaj własnymi wpisami i decyduj o tym, czy są widoczne publicznie.
           </p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
-          <div className="space-y-6">
-            <Card className="shadow-medium">
+          <div className="space-y-6 animate-in slide-in-from-left-4 fade-in duration-500">
+            <Card className="glass-panel border-0 bg-card/50">
               <CardHeader>
                 <CardTitle>Twoje firmy</CardTitle>
                 <CardDescription>
-                  Poniżej znajdziesz listę firm utworzonych przez konto {user?.email}. Prywatne wpisy nie pojawią się na stronie
-                  głównej, dopóki nie oznaczysz ich jako publiczne.
+                  Poniżej znajdziesz listę firm utworzonych przez konto {user?.email}.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -150,31 +152,31 @@ const Dashboard = () => {
                 )}
                 {!isLoadingCompanies && !isCompaniesError && myCompanies.length === 0 && (
                   <p className="text-sm text-muted-foreground">
-                    Nie dodano jeszcze żadnej firmy. Skorzystaj z formularza po prawej stronie, aby dodać pierwszą pozycję.
+                    Nie dodano jeszcze żadnej firmy. Skorzystaj z formularza po prawej stronie.
                   </p>
                 )}
                 <div className="space-y-4">
                   {myCompanies.map((company) => (
-                    <Card key={company.id} className="border border-white/10 bg-white/5">
+                    <Card key={company.id} className="border border-border/50 bg-card/60 transition-all hover:bg-card/80">
                       <CardHeader className="flex flex-col gap-2">
                         <div className="flex items-center justify-between gap-4">
                           <div>
-                            <CardTitle className="text-lg text-white">{company.company_name}</CardTitle>
-                            <CardDescription>{company.industry}</CardDescription>
+                            <CardTitle className="text-lg font-bold">{company.company_name}</CardTitle>
+                            <CardDescription className="text-primary font-medium">{company.industry}</CardDescription>
                           </div>
                           <div className="flex flex-col items-end gap-1 text-right">
-                            <Badge variant={company.is_public ? 'default' : 'secondary'} className={company.is_public ? '' : 'bg-slate-200 text-slate-900'}>
+                            <Badge variant={company.is_public ? 'default' : 'secondary'}>
                               {company.is_public ? 'Publiczna' : 'Prywatna'}
                             </Badge>
-                            <span className="text-xs text-white/60">Ostatnia aktualizacja: {company.last_updated ? new Date(company.last_updated).toLocaleDateString() : 'N/A'}</span>
+                            <span className="text-xs text-muted-foreground">Updated: {company.last_updated ? new Date(company.last_updated).toLocaleDateString() : 'N/A'}</span>
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-2 text-sm text-white/80">
-                        <p>{company.description}</p>
+                      <CardContent className="space-y-2 text-sm text-foreground/80">
+                        <p className="line-clamp-2">{company.description}</p>
                         <div className="flex flex-wrap gap-2">
                           {company.technologies_used.slice(0, 4).map((tech) => (
-                            <Badge key={tech} variant="outline">
+                            <Badge key={tech} variant="outline" className="border-primary/20 bg-primary/5 text-primary">
                               {tech}
                             </Badge>
                           ))}
@@ -187,12 +189,11 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          <Card className="shadow-medium">
+          <Card className="glass-panel h-fit animate-in slide-in-from-right-4 fade-in duration-500 delay-100">
             <CardHeader>
               <CardTitle>Dodaj nową firmę</CardTitle>
               <CardDescription>
-                Uzupełnij dane firmy. Listy (zarząd, produkty, technologie) możesz oddzielić przecinkami. Zmieniaj status prywatności
-                w zależności od tego, czy wpis ma być widoczny publicznie.
+                Uzupełnij dane firmy.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -205,106 +206,91 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="companyName">Nazwa firmy</Label>
-                    <Input id="companyName" value={formState.companyName} onChange={handleInputChange('companyName')} required />
+                    <Input id="companyName" value={formState.companyName} onChange={handleInputChange('companyName')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="krs">KRS / NIP / HRB</Label>
-                    <Input id="krs" value={formState.krsNIPorHRB} onChange={handleInputChange('krsNIPorHRB')} required />
+                    <Input id="krs" value={formState.krsNIPorHRB} onChange={handleInputChange('krsNIPorHRB')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
-                    <Input id="status" value={formState.status} onChange={handleInputChange('status')} required />
+                    <Input id="status" value={formState.status} onChange={handleInputChange('status')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="country">Kraj</Label>
-                    <Input id="country" value={formState.country} onChange={handleInputChange('country')} required />
+                    <Input id="country" value={formState.country} onChange={handleInputChange('country')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="industry">Branża</Label>
-                    <Input id="industry" value={formState.industry} onChange={handleInputChange('industry')} required />
+                    <Input id="industry" value={formState.industry} onChange={handleInputChange('industry')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="employeeCount">Liczba pracowników</Label>
-                    <Input id="employeeCount" value={formState.employeeCount} onChange={handleInputChange('employeeCount')} required />
+                    <Label htmlFor="employeeCount">Pracownicy</Label>
+                    <Input id="employeeCount" value={formState.employeeCount} onChange={handleInputChange('employeeCount')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="foundedYear">Rok założenia</Label>
-                    <Input id="foundedYear" value={formState.foundedYear} onChange={handleInputChange('foundedYear')} required />
+                    <Input id="foundedYear" value={formState.foundedYear} onChange={handleInputChange('foundedYear')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastUpdated">Data aktualizacji</Label>
-                    <Input id="lastUpdated" type="date" value={formState.lastUpdated} onChange={handleInputChange('lastUpdated')} />
+                    <Label htmlFor="lastUpdated">Aktualizacja</Label>
+                    <Input id="lastUpdated" type="date" value={formState.lastUpdated} onChange={handleInputChange('lastUpdated')} className="bg-background/50" />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="website">Strona internetowa</Label>
-                    <Input id="website" value={formState.website} onChange={handleInputChange('website')} required />
+                    <Label htmlFor="website">Strona www</Label>
+                    <Input id="website" value={formState.website} onChange={handleInputChange('website')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contactEmail">E-mail kontaktowy</Label>
-                    <Input id="contactEmail" type="email" value={formState.contactEmail} onChange={handleInputChange('contactEmail')} required />
+                    <Label htmlFor="contactEmail">Email</Label>
+                    <Input id="contactEmail" type="email" value={formState.contactEmail} onChange={handleInputChange('contactEmail')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber">Telefon</Label>
-                    <Input id="phoneNumber" value={formState.phoneNumber} onChange={handleInputChange('phoneNumber')} required />
+                    <Input id="phoneNumber" value={formState.phoneNumber} onChange={handleInputChange('phoneNumber')} required className="bg-background/50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="revenue">Przychody</Label>
-                    <Input id="revenue" value={formState.revenue} onChange={handleInputChange('revenue')} required />
+                    <Input id="revenue" value={formState.revenue} onChange={handleInputChange('revenue')} required className="bg-background/50" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="address">Adres</Label>
-                  <Textarea id="address" value={formState.address} onChange={handleInputChange('address')} required rows={2} />
+                  <Textarea id="address" value={formState.address} onChange={handleInputChange('address')} required rows={2} className="bg-background/50" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Opis działalności</Label>
-                  <Textarea id="description" value={formState.description} onChange={handleInputChange('description')} required rows={4} />
+                  <Label htmlFor="description">Opis</Label>
+                  <Textarea id="description" value={formState.description} onChange={handleInputChange('description')} required rows={4} className="bg-background/50" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="management">Zarząd (lista rozdzielona przecinkami)</Label>
-                  <Textarea id="management" value={formState.management} onChange={handleInputChange('management')} rows={3} />
+                  <Label htmlFor="management">Zarząd (po przecinku)</Label>
+                  <Textarea id="management" value={formState.management} onChange={handleInputChange('management')} rows={2} className="bg-background/50" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="products">Produkty i usługi</Label>
-                  <Textarea id="products" value={formState.productsAndServices} onChange={handleInputChange('productsAndServices')} rows={3} />
+                  <Label htmlFor="products">Produkty</Label>
+                  <Textarea id="products" value={formState.productsAndServices} onChange={handleInputChange('productsAndServices')} rows={2} className="bg-background/50" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="technologies">Technologie</Label>
-                  <Textarea id="technologies" value={formState.technologiesUsed} onChange={handleInputChange('technologiesUsed')} rows={3} />
+                  <Textarea id="technologies" value={formState.technologiesUsed} onChange={handleInputChange('technologiesUsed')} rows={2} className="bg-background/50" />
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-3">
+                <div className="flex items-center justify-between rounded-lg border border-border p-3 bg-secondary/50">
                   <div>
-                    <Label htmlFor="isPublic" className="text-sm font-medium text-white">
+                    <Label htmlFor="isPublic" className="font-medium">
                       Widoczność publiczna
                     </Label>
-                    <p className="text-xs text-white/70">Po wyłączeniu wpis będzie widoczny tylko dla Ciebie po zalogowaniu.</p>
+                    <p className="text-xs text-muted-foreground">Wpis będzie widoczny dla wszystkich.</p>
                   </div>
                   <Switch id="isPublic" checked={formState.isPublic} onCheckedChange={(checked) => setFormState((prev) => ({ ...prev, isPublic: checked }))} />
                 </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                <Button type="submit" className="w-full font-bold shadow-soft transition-transform active:scale-95" disabled={isSubmitting}>
                   {isSubmitting ? 'Zapisywanie...' : 'Dodaj firmę'}
                 </Button>
               </form>
             </CardContent>
           </Card>
         </div>
-
-        <Card className="mt-10 border border-dashed border-white/20 bg-white/5">
-          <CardHeader>
-            <CardTitle>Import danych przez API</CardTitle>
-            <CardDescription>
-              Możesz także przesłać wiele firm jednocześnie, wysyłając żądanie POST na <code className="rounded bg-slate-900 px-2 py-0.5">/api/companies/import</code> z tablicą obiektów w formacie JSON.
-              Wymagane pola pokrywają się z formularzem powyżej.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm text-white/70">
-            <p>
-              Użyj odpowiednie uwierzytelnienie Supabase, aby prywatne wpisy pozostały widoczne tylko dla Ciebie.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

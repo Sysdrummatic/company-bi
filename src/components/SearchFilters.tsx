@@ -43,31 +43,35 @@ export const SearchFilters = ({
     selectedStatus !== 'all';
 
   return (
-    <Card className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_35px_80px_-30px_rgba(15,23,42,0.65)] backdrop-blur">
+    <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-white/70">
-            <Search className="h-4 w-4" />
-            Company Name or Keywords
+          <label className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+            Search
           </label>
-          <Input
-            placeholder="Search companies, products, or executives..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="border-white/10 bg-slate-950/60 text-white placeholder:text-white/40 transition-all duration-200 focus-visible:ring-white/20 focus-visible:ring-offset-0"
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Company, product, executive..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-background border-input text-foreground focus-visible:ring-primary"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-white/70">
-            <MapPin className="h-4 w-4" />
-            Country
+          <label className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+            Location
           </label>
           <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-            <SelectTrigger className="border-white/10 bg-slate-950/60 text-white transition-all duration-200 focus:ring-white/20 focus:ring-offset-0">
-              <SelectValue placeholder="Select country..." />
+            <SelectTrigger className="bg-background border-input text-foreground focus:ring-primary">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder="Select country" />
+              </div>
             </SelectTrigger>
-            <SelectContent className="border-white/10 bg-slate-950 text-white">
+            <SelectContent>
               {COUNTRIES.map((country) => (
                 <SelectItem key={country.code} value={country.code}>
                   {country.name}
@@ -78,15 +82,17 @@ export const SearchFilters = ({
         </div>
 
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-white/70">
-            <Building className="h-4 w-4" />
+          <label className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
             Industry
           </label>
           <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-            <SelectTrigger className="border-white/10 bg-slate-950/60 text-white transition-all duration-200 focus:ring-white/20 focus:ring-offset-0">
-              <SelectValue placeholder="Select industry..." />
+            <SelectTrigger className="bg-background border-input text-foreground focus:ring-primary">
+              <div className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder="Select industry" />
+              </div>
             </SelectTrigger>
-            <SelectContent className="border-white/10 bg-slate-950 text-white">
+            <SelectContent>
               <SelectItem value="all">All Industries</SelectItem>
               {INDUSTRIES.map((industry) => (
                 <SelectItem key={industry} value={industry}>
@@ -98,43 +104,43 @@ export const SearchFilters = ({
         </div>
 
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-white/70">
-            <Users className="h-4 w-4" />
-            Employee Range
+          <label className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+            Size
           </label>
           <Select value={selectedEmployeeRange} onValueChange={setSelectedEmployeeRange}>
-            <SelectTrigger className="border-white/10 bg-slate-950/60 text-white transition-all duration-200 focus:ring-white/20 focus:ring-offset-0">
-              <SelectValue placeholder="Select employee range..." />
+            <SelectTrigger className="bg-background border-input text-foreground focus:ring-primary">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder="Any size" />
+              </div>
             </SelectTrigger>
-            <SelectContent className="border-white/10 bg-slate-950 text-white">
+            <SelectContent>
               {EMPLOYEE_SIZES.map((size) => (
                 <SelectItem key={size} value={size}>
-                  {size === 'all' ? 'All Company Sizes' : size}
+                  {size === 'all' ? 'Any size' : size}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2 md:col-span-1 xl:col-span-4">
-          <label className="flex items-center gap-2 text-sm font-medium text-white/70">
-            <ShieldCheck className="h-4 w-4" />
-            Company Status
+        <div className="space-y-3 md:col-span-1 xl:col-span-4">
+          <label className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+            Filter by Status
           </label>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {COMPANY_STATUSES.map((status) => (
-              <Button
+              <Badge
                 key={status}
-                type="button"
                 variant="outline"
-                size="sm"
-                className={`rounded-full border-white/20 px-4 text-white/70 transition hover:bg-white/10 hover:text-white ${
-                  selectedStatus === status ? 'bg-white text-slate-900 hover:bg-white hover:text-slate-900' : ''
-                }`}
                 onClick={() => setSelectedStatus(status)}
+                className={`cursor-pointer px-4 py-1.5 rounded-full border transition-all ${selectedStatus === status
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border bg-background hover:bg-secondary text-muted-foreground'
+                  }`}
               >
-                {status === 'all' ? 'Any status' : status}
-              </Button>
+                {status === 'all' ? 'All Statuses' : status}
+              </Badge>
             ))}
           </div>
         </div>
@@ -142,14 +148,14 @@ export const SearchFilters = ({
 
       {hasActiveFilters && (
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <span className="text-sm font-medium text-white/60">Active filters:</span>
+          <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
           {searchQuery && (
-            <Badge variant="secondary" className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-white/80 backdrop-blur">
+            <Badge variant="secondary" className="flex items-center gap-1 rounded-full px-3 py-1">
               “{searchQuery}”
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="ml-1 rounded-full p-0.5 hover:bg-white/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-background/20"
                 aria-label="Clear search"
               >
                 ×
@@ -157,12 +163,12 @@ export const SearchFilters = ({
             </Badge>
           )}
           {selectedCountry !== 'all' && (
-            <Badge variant="secondary" className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-white/80 backdrop-blur">
+            <Badge variant="secondary" className="flex items-center gap-1 rounded-full px-3 py-1">
               Country: {selectedCountryLabel}
               <button
                 type="button"
                 onClick={() => setSelectedCountry('all')}
-                className="ml-1 rounded-full p-0.5 hover:bg-white/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-background/20"
                 aria-label="Clear country filter"
               >
                 ×
@@ -170,12 +176,12 @@ export const SearchFilters = ({
             </Badge>
           )}
           {selectedIndustry !== 'all' && (
-            <Badge variant="secondary" className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-white/80 backdrop-blur">
+            <Badge variant="secondary" className="flex items-center gap-1 rounded-full px-3 py-1">
               Industry: {selectedIndustry}
               <button
                 type="button"
                 onClick={() => setSelectedIndustry('all')}
-                className="ml-1 rounded-full p-0.5 hover:bg-white/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-background/20"
                 aria-label="Clear industry filter"
               >
                 ×
@@ -183,12 +189,12 @@ export const SearchFilters = ({
             </Badge>
           )}
           {selectedEmployeeRange !== 'all' && (
-            <Badge variant="secondary" className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-white/80 backdrop-blur">
+            <Badge variant="secondary" className="flex items-center gap-1 rounded-full px-3 py-1">
               Size: {selectedEmployeeRange}
               <button
                 type="button"
                 onClick={() => setSelectedEmployeeRange('all')}
-                className="ml-1 rounded-full p-0.5 hover:bg-white/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-background/20"
                 aria-label="Clear employee range filter"
               >
                 ×
@@ -196,12 +202,12 @@ export const SearchFilters = ({
             </Badge>
           )}
           {selectedStatus !== 'all' && (
-            <Badge variant="secondary" className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-white/80 backdrop-blur">
+            <Badge variant="secondary" className="flex items-center gap-1 rounded-full px-3 py-1">
               Status: {selectedStatus}
               <button
                 type="button"
                 onClick={() => setSelectedStatus('all')}
-                className="ml-1 rounded-full p-0.5 hover:bg-white/20"
+                className="ml-1 rounded-full p-0.5 hover:bg-background/20"
                 aria-label="Clear status filter"
               >
                 ×
@@ -213,13 +219,13 @@ export const SearchFilters = ({
             type="button"
             variant="ghost"
             size="sm"
-            className="text-white/70 hover:bg-white/10 hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
             onClick={onResetFilters}
           >
             Reset all
           </Button>
         </div>
       )}
-    </Card>
+    </div>
   );
 };

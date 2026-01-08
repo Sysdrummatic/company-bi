@@ -2,8 +2,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://ygtrgkfudbmizzvpclaz.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlndHJna2Z1ZGJtaXp6dnBjbGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5MTYzNTAsImV4cCI6MjA3NDQ5MjM1MH0.aPbbnyCeJt5WdnheZVreJDZK96D-YDsqTtqKKubL7ns";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.warn("Missing Supabase credentials. Authentication may fail.");
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

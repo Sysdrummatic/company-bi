@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Building2, MapPin, Users, Calendar, ExternalLink, Filter, Sparkles } from 'lucide-react';
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -87,9 +88,9 @@ export const CompanyResults = ({
     return companies.filter((company) => {
       const matchesQuery = normalizedQuery
         ? company.company_name?.toLowerCase().includes(normalizedQuery) ||
-          company.description?.toLowerCase().includes(normalizedQuery) ||
-          company.products_and_services?.some((service) => service.toLowerCase().includes(normalizedQuery)) ||
-          company.technologies_used?.some((tech) => tech.toLowerCase().includes(normalizedQuery))
+        company.description?.toLowerCase().includes(normalizedQuery) ||
+        company.products_and_services?.some((service) => service.toLowerCase().includes(normalizedQuery)) ||
+        company.technologies_used?.some((tech) => tech.toLowerCase().includes(normalizedQuery))
         : true;
 
       const matchesCountry = selectedCountry === 'all'
@@ -188,14 +189,29 @@ export const CompanyResults = ({
     );
   }
 
+
+
+  // ... existing imports
+
   if (isLoading) {
     return (
-      <Card className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-white/70 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-white">Loading company data...</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-white/60">Please wait while we synchronise data from the database.</CardContent>
-      </Card>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} className="group bg-card border border-border rounded-xl p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <Skeleton className="h-10 w-10 rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </Card>
+        ))}
+      </div>
     );
   }
 
@@ -218,21 +234,21 @@ export const CompanyResults = ({
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-white">
+          <h2 className="text-2xl font-semibold text-foreground">
             Showing {visibleCompanies.length} of {sortedCompanies.length} companies
           </h2>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-muted-foreground">
             {summary.activeCompanies.toLocaleString()} active companies · {summary.totalCountries} countries · {summary.totalIndustries} industries
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-white/60" aria-hidden="true" />
+          <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Select value={sortOption} onValueChange={(value) => onSortChange(value as SortOption)}>
-            <SelectTrigger className="w-[210px] border-white/10 bg-slate-950/60 text-white focus:ring-white/20 focus:ring-offset-0">
+            <SelectTrigger className="w-[210px] bg-background text-foreground">
               <SelectValue placeholder="Sort results" />
             </SelectTrigger>
-            <SelectContent className="border-white/10 bg-slate-950 text-white">
+            <SelectContent>
               {sortOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -247,63 +263,59 @@ export const CompanyResults = ({
         {visibleCompanies.map((company) => (
           <Card
             key={company.id}
-            className="rounded-3xl border border-white/10 bg-slate-950/60 text-white/80 shadow-[0_35px_80px_-30px_rgba(15,23,42,0.6)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_45px_100px_-30px_rgba(56,189,248,0.35)]"
+            className="group glass-panel glass-panel-hover rounded-xl overflow-hidden"
           >
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 border-b border-border/40 bg-secondary/30">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-xl bg-gradient-to-br from-business-accent/40 via-sky-500/30 to-purple-500/20 p-2">
-                    <Building2 className="h-5 w-5 text-white" />
+                  <div className="rounded-xl bg-gradient-to-br from-primary/10 via-blue-500/10 to-purple-500/10 p-2 text-primary">
+                    <Building2 className="h-5 w-5" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg leading-tight text-white">
+                    <CardTitle className="text-lg leading-tight text-foreground">
                       {highlightMatch(company.company_name, normalizedQuery)}
                     </CardTitle>
-                    <p className="text-sm text-white/60">
+                    <p className="text-sm text-muted-foreground">
                       {highlightMatch(company.krs_nip_or_hrb || '', normalizedQuery)}
                     </p>
                   </div>
                 </div>
                 <Badge
-                  variant="secondary"
-                  className={`border-white/20 px-3 py-1 text-xs font-medium ${
-                    company.status === 'Active'
-                      ? 'bg-emerald-400/20 text-emerald-200'
-                      : 'bg-white/10 text-white/70'
-                  }`}
+                  variant={company.status === 'Active' ? 'default' : 'secondary'}
+                  className="bg-primary/10 text-primary hover:bg-primary/20"
                 >
                   {company.status}
                 </Badge>
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-4">
-              <p className="line-clamp-3 text-sm text-white/70">
+            <CardContent className="space-y-4 pt-4">
+              <p className="line-clamp-3 text-sm text-muted-foreground">
                 {highlightMatch(company.description || '', normalizedQuery)}
               </p>
 
-              <div className="grid grid-cols-2 gap-4 text-sm text-white/70">
+              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-sky-300" />
+                  <MapPin className="h-4 w-4 text-primary" />
                   <span>{company.country}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-sky-300" />
+                  <Building2 className="h-4 w-4 text-primary" />
                   <span>{company.industry}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-sky-300" />
+                  <Users className="h-4 w-4 text-primary" />
                   <span>{company.employee_count}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-sky-300" />
+                  <Calendar className="h-4 w-4 text-primary" />
                   <span>Founded {company.founded_year}</span>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-2">
                 {company.products_and_services?.slice(0, 3).map((service) => (
-                  <Badge key={service} variant="outline" className="border-white/20 text-xs text-white/70">
+                  <Badge key={service} variant="outline" className="border-border text-xs text-muted-foreground">
                     {service}
                   </Badge>
                 ))}
@@ -313,7 +325,7 @@ export const CompanyResults = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 border-white/20 text-white/80 transition hover:bg-white/10 hover:text-white"
+                  className="flex-1"
                   onClick={() => setSelectedCompany(company)}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
@@ -322,7 +334,7 @@ export const CompanyResults = ({
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+                  className="bg-secondary hover:bg-secondary/80"
                   onClick={() => openMaps(company)}
                 >
                   🗺️ Maps
@@ -330,7 +342,8 @@ export const CompanyResults = ({
               </div>
             </CardContent>
           </Card>
-        ))}
+        ))
+        }
       </div>
 
       {remainingCount > 0 && (
@@ -338,7 +351,7 @@ export const CompanyResults = ({
           <Button
             variant="outline"
             onClick={() => setDisplayedCount((prev) => prev + 10)}
-            className="px-8 border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
+            className="px-8"
           >
             Show more ({remainingCount} remaining)
           </Button>
@@ -346,9 +359,9 @@ export const CompanyResults = ({
       )}
 
       {sortedCompanies.length === 0 && (
-        <Card className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-white/70 backdrop-blur">
-          <Building2 className="mx-auto mb-4 h-12 w-12 text-white/40" />
-          <h3 className="mb-2 text-lg font-medium text-white">No companies found</h3>
+        <Card className="glass-panel p-8 text-center text-muted-foreground">
+          <Building2 className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
+          <h3 className="mb-2 text-lg font-medium text-foreground">No companies found</h3>
           <p className="text-sm">
             Refine your filters or broaden the search criteria to discover more businesses.
           </p>

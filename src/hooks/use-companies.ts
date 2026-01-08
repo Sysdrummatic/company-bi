@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Company, CompanyPayload } from '@/types/company';
 import { supabase } from '@/integrations/supabase/client';
+import { mockCompanyService } from '@/data/mock-companies';
+
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
 interface FetchCompaniesOptions {
   mine?: boolean;
@@ -8,21 +11,32 @@ interface FetchCompaniesOptions {
 }
 
 const fetchCompanies = async ({ mine = false, userId }: FetchCompaniesOptions = {}): Promise<Company[]> => {
-  let query = supabase.from('companies').select('*');
-  
-  if (mine && userId) {
-    query = query.eq('user_id', userId);
-  } else {
-    query = query.eq('is_public', true);
+  if (USE_MOCK_DATA) {
+    console.log("Using Mock Data");
+    return mockCompanyService.getCompanies();
   }
-  
-  const { data, error } = await query.order('created_at', { ascending: false });
-  
-  if (error) {
-    throw new Error('Nie udało się pobrać listy firm');
+
+  try {
+    let query = supabase.from('companies').select('*');
+
+    if (mine && userId) {
+      query = query.eq('user_id', userId);
+    } else {
+      query = query.eq('is_public', true);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      console.error("Supabase Error:", error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.warn("Falling back to Mock Data due to error:", error);
+    return mockCompanyService.getCompanies();
   }
-  
-  return data || [];
 };
 
 interface UseCompaniesOptions extends FetchCompaniesOptions {
@@ -34,22 +48,28 @@ export const useCompanies = ({ mine = false, userId, enabled = true, staleTime =
   useQuery({
     queryKey: ['companies', mine ? 'mine' : 'public', userId ?? null],
     queryFn: () => fetchCompanies({ mine, userId }),
-    enabled: enabled && (!mine || Boolean(userId)),
+    enabled: enabled && (!mine || Boolean(userId) || USE_MOCK_DATA), // Allow mock data even if not logged in
     staleTime,
   });
 
 export const fetchCompanyById = async (id: string): Promise<Company | null> => {
-  const { data, error } = await supabase
-    .from('companies')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error('Nie udało się pobrać danych firmy');
+  if (USE_MOCK_DATA) {
+    return mockCompanyService.getCompanyById(id);
   }
 
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.warn("Falling back to Mock Data for details:", error);
+    return mockCompanyService.getCompanyById(id);
+  }
 };
 
 export const useCompany = (id?: string) =>

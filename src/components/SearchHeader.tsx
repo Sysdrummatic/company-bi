@@ -2,60 +2,61 @@ import { Sparkles, ShieldCheck, Globe, BarChart3 } from 'lucide-react';
 
 export const SearchHeader = () => {
   return (
-    <div className="space-y-8 text-left">
-      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-sm font-medium text-white/80 shadow-[0_10px_40px_rgba(15,23,42,0.25)] backdrop-blur">
-        <Sparkles className="h-4 w-4 text-business-accent" />
-        Intelligence built for deal teams
-      </div>
-
+    <div className="space-y-12 text-center max-w-5xl mx-auto">
       <div className="space-y-6">
-        <h1 className="text-4xl font-semibold tracking-tight text-white md:text-6xl">
-          Discover and qualify companies with
-          <span className="bg-gradient-to-r from-business-accent via-sky-400 to-blue-500 bg-clip-text text-transparent">
-            {' '}
-            confidence
-          </span>
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-1.5 text-sm font-medium text-foreground shadow-sm">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span>Intelligence built for deal teams</span>
+        </div>
+
+        <h1 className="text-4xl font-heading font-bold tracking-tight text-slate-950 dark:text-foreground md:text-6xl max-w-3xl mx-auto">
+          Qualify companies with
+          <span className="text-primary"> confidence</span>
         </h1>
 
-        <p className="max-w-2xl text-lg leading-relaxed text-white/70">
-          Accelerate origination with enriched firmographic data, real-time compliance checks, and market intelligence
-          tuned to your portfolio strategy.
+        <p className="max-w-2xl mx-auto text-lg text-muted-foreground leading-relaxed">
+          Accelerate origination with enriched firmographic data, real-time compliance checks, and market intelligence.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-white/80 shadow-[0_24px_60px_rgba(15,23,42,0.35)] backdrop-blur">
-          <p className="text-3xl font-semibold text-white">1.2M+</p>
-          <p className="mt-1 text-sm">enriched company profiles with executive coverage</p>
+      <div className="grid gap-6 sm:grid-cols-3 text-left">
+        <div className="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
+          <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <span className="font-bold">1.2M</span>
+          </div>
+          <h3 className="font-heading font-semibold text-slate-950 dark:text-foreground">Verified Profiles</h3>
+          <p className="mt-1 text-sm text-slate-600 dark:text-muted-foreground">Enriched company profiles with full executive coverage and history.</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-white/80 shadow-[0_24px_60px_rgba(15,23,42,0.35)] backdrop-blur">
-          <p className="flex items-center gap-2 text-3xl font-semibold text-white">
-            <ShieldCheck className="h-6 w-6 text-emerald-300" />
-            24/7
-          </p>
-          <p className="mt-1 text-sm">screening across sanctions, PEP, and adverse media</p>
+
+        <div className="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
+          <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <h3 className="font-heading font-semibold text-slate-950 dark:text-foreground">24/7 Screening</h3>
+          <p className="mt-1 text-sm text-slate-600 dark:text-muted-foreground">Continuous monitoring across sanctions, PEP, and adverse media lists.</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-white/80 shadow-[0_24px_60px_rgba(15,23,42,0.35)] backdrop-blur">
-          <p className="flex items-center gap-2 text-3xl font-semibold text-white">
-            <BarChart3 className="h-6 w-6 text-sky-300" />
-            360°
-          </p>
-          <p className="mt-1 text-sm">coverage of growth, hiring, and digital footprint metrics</p>
+
+        <div className="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
+          <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600">
+            <BarChart3 className="h-5 w-5" />
+          </div>
+          <h3 className="font-heading font-semibold text-slate-950 dark:text-foreground">360° Intelligence</h3>
+          <p className="mt-1 text-sm text-slate-600 dark:text-muted-foreground">Deep coverage of growth metrics, hiring velocity, and digital signals.</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-6 text-sm text-white/70">
+      <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-medium text-muted-foreground">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-emerald-300" />
-          SOC 2 Type II ready
+          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          SOC 2 Type II
         </div>
         <div className="flex items-center gap-2">
-          <Globe className="h-4 w-4 text-business-accent" />
-          50+ emerging markets tracked
+          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+          50+ Markets
         </div>
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-sky-300" />
-          AI-assisted prospecting workflows
+          <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+          AI Prospecting
         </div>
       </div>
     </div>

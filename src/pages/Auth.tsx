@@ -65,7 +65,7 @@ const Auth = () => {
       });
 
       if (error) throw error;
-      
+
       setMessage('Sprawdź swoją skrzynkę e-mail, aby potwierdzić rejestrację.');
     } catch (error: any) {
       setError(error.message);
@@ -75,17 +75,30 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md space-y-4">
-        <div className="text-center">
-          <Link to="/" className="text-primary hover:underline text-sm">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-hero opacity-30"></div>
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-[-10%] top-[-10%] h-[40rem] w-[40rem] animate-pulse-glow rounded-full bg-primary/20 blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] h-[40rem] w-[40rem] animate-pulse-glow rounded-full bg-accent/20 blur-[120px] delay-700"></div>
+      </div>
+
+      <div className="w-full max-w-md space-y-8 animate-in-fade relative z-10">
+        <div className="text-center space-y-2">
+          <Link to="/" className="text-muted-foreground hover:text-foreground hover:underline text-sm transition-colors">
             ← Powrót do strony głównej
           </Link>
+          <div className="flex justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+              <span className="text-2xl font-bold">BI</span>
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Witaj ponownie</h1>
         </div>
-        
-        <Card className="shadow-medium">
-          <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-2xl font-semibold">Zaloguj się lub zarejestruj</CardTitle>
+
+        <Card className="glass-panel border-0 bg-card/40">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-xl font-semibold">Zaloguj się lub zarejestruj</CardTitle>
             <CardDescription>
               Uzyskaj dostęp do prywatnych danych i zarządzaj własnymi firmami
             </CardDescription>
@@ -96,20 +109,20 @@ const Auth = () => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             {message && (
-              <Alert className="mb-4">
+              <Alert className="mb-4 border-primary/50 bg-primary/10 text-primary">
                 <AlertDescription>{message}</AlertDescription>
               </Alert>
             )}
 
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Logowanie</TabsTrigger>
                 <TabsTrigger value="signup">Rejestracja</TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="login">
+
+              <TabsContent value="login" className="animate-in slide-in-from-left-2 duration-300">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
@@ -118,8 +131,9 @@ const Auth = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Twój email"
+                      placeholder="name@example.com"
                       required
+                      className="bg-background/50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -129,17 +143,18 @@ const Auth = () => {
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Wprowadź hasło"
+                      placeholder="••••••••"
                       required
+                      className="bg-background/50"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full shadow-soft" disabled={loading}>
                     {loading ? 'Logowanie...' : 'Zaloguj się'}
                   </Button>
                 </form>
               </TabsContent>
-              
-              <TabsContent value="signup">
+
+              <TabsContent value="signup" className="animate-in slide-in-from-right-2 duration-300">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-username">Nazwa użytkownika</Label>
@@ -147,8 +162,9 @@ const Auth = () => {
                       id="signup-username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Wybierz nazwę użytkownika"
+                      placeholder="johndoe"
                       required
+                      className="bg-background/50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -158,8 +174,9 @@ const Auth = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Twój email"
+                      placeholder="name@example.com"
                       required
+                      className="bg-background/50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -169,13 +186,14 @@ const Auth = () => {
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Co najmniej 6 znaków"
+                      placeholder="Min. 6 znaków"
                       required
                       minLength={6}
+                      className="bg-background/50"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Rejestracja...' : 'Zarejestruj się'}
+                  <Button type="submit" className="w-full shadow-soft" disabled={loading}>
+                    {loading ? 'Rejestracja...' : 'Utwórz konto'}
                   </Button>
                 </form>
               </TabsContent>
